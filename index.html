@@ -4,133 +4,205 @@
   <meta charset="UTF-8">
   <title>Ritwika Kancharla — AI Research</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Palatino-like research font -->
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 0 20px;
-      line-height: 1.6;
-      color: #222;
+    :root {
+      --blue: #1A3E73;
+      --lightgray: #e8e8e8;
+      --tag-bg: #f5f5f5;
     }
-    h1 { font-size: 32px; margin-bottom: 4px; }
-    h2 { margin-top: 32px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
-    a { color: #0366d6; text-decoration: none; }
-    a:hover { text-decoration: underline; }
+
+    body {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      max-width: 860px;
+      margin: 50px auto;
+      padding: 0 20px;
+      line-height: 1.55;
+      color: #222;
+      font-size: 16px;
+    }
+
+    h1 {
+      font-size: 34px;
+      margin-bottom: 6px;
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    h2 {
+      margin-top: 36px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--lightgray);
+      color: var(--blue);
+      font-size: 22px;
+    }
+
+    h3 {
+      font-size: 18px;
+      margin-bottom: 2px;
+      color: #111;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
     .tag {
       display: inline-block;
-      background: #f2f2f2;
-      padding: 3px 8px;
-      border-radius: 4px;
+      background: var(--tag-bg);
+      padding: 3px 9px;
+      border-radius: 5px;
       margin-right: 6px;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
       font-size: 12px;
+      color: #444;
+      border: 1px solid #ddd;
+    }
+
+    .paper-title {
+      font-weight: 700;
+      font-size: 17px;
+      color: #111;
+      margin-bottom: 4px;
+    }
+
+    .paper-block {
+      margin-bottom: 28px;
+    }
+
+    .badges img {
+      margin-right: 6px;
+      margin-top: 6px;
     }
   </style>
 </head>
+
 <body>
 
+  <!-- HEADER -->
   <h1>Ritwika Kancharla</h1>
-  <p><strong>AI / ML Researcher</strong> — Neural Optimization, Routing Models, Combinatorial Reasoning</p>
+  <p><strong>AI / ML Researcher</strong> — Neural Optimization · Routing Models · World Models · Supply Chain Systems</p>
 
-  <p>Email: <a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a></p>
   <p>
-    <a href="https://github.com/ritwikareddykancharla">GitHub</a> ·
+    Email: <a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a><br>
+    GitHub: <a href="https://github.com/ritwikareddykancharla">github.com/ritwikareddykancharla</a>
   </p>
 
-  <h2>About</h2>
+
+  <!-- ABOUT -->
+  <h2>About Me</h2>
   <p>
-    I work at the intersection of <strong>neural optimization, routing, and large-scale logistics</strong>.
-    My current research focuses on transformer-based surrogate solvers for mixed-integer linear programs (MILPs),
-    diffusion-based routing priors, constraint graph architectures, and world models for Amazon-scale
-    middle-mile routing.
+    I'm Ritwika — an AI researcher working at the intersection of <strong>neural optimization,
+    combinatorial reasoning, and large-scale logistics systems</strong>.
   </p>
 
+  <p>
+    I completed my <strong>B.Tech in Computer Science from IIT Madras</strong> and my
+    <strong>MS in Computer Science from Purdue University</strong>.
+    I also worked as an <strong>SDE at Amazon (SCOT)</strong>, where I developed a deep interest in
+    routing, operations research, and middle-mile logistics.
+  </p>
+
+  <p>
+    My current research focuses on building <strong>Routing Foundation Models (RFM)</strong> —
+    neural architectures that:
+  </p>
+
+  <ul>
+    <li>approximate MILP solvers (MILP-Transformer),</li>
+    <li>generate feasible routing priors (Diffusion Warm-Starts),</li>
+    <li>predict network dynamics (Mamba World Models),</li>
+    <li>encode facility-constraint interactions (Constraint Graph Transformers),</li>
+    <li>and enable real-time re-optimization (Proximal Refinement Networks).</li>
+  </ul>
+
+  <p>This work is geared toward <strong>Amazon-scale routing, planning, and simulation</strong>.</p>
+
+
+  <!-- RESEARCH INTERESTS -->
   <h2>Research Interests</h2>
   <p>
     <span class="tag">Neural Optimization</span>
-    <span class="tag">Transformers</span>
+    <span class="tag">MILP Surrogate Models</span>
     <span class="tag">Routing & Logistics</span>
-    <span class="tag">World Models</span>
+    <span class="tag">Transformers</span>
     <span class="tag">Diffusion Models</span>
-    <span class="tag">MILP Surrogates</span>
-    <span class="tag">Combinatorial Reasoning</span>
-    <span class="tag">Operations Research</span>
+    <span class="tag">World Models</span>
+    <span class="tag">Supply Chain ML</span>
+    <span class="tag">Constraint Learning</span>
   </p>
 
-  <h2>Papers & Projects</h2>
 
-  <!-- RFM -->
-  <p><strong>Routing Foundation Model (RFM)</strong></p>
-  <p>
-    A long-term research program on surrogate MILP solvers, diffusion routing priors,
-    world models, and constraint graph architectures for large logistics networks.
-    <br>
-    <a href="./rfm_monograph.pdf">
-      <img src="https://img.shields.io/badge/PDF-Published-red?logo=adobeacrobatreader">
-    </a>
-    <a href="https://github.com/ritwikareddykancharla/routingagi">
-      <img src="https://img.shields.io/badge/GitHub-Monograph-black?logo=github">
-    </a>
-  </p>
+  <!-- PAPERS -->
+  <h2>Research Papers & Whitepapers</h2>
 
-  <!-- MILP-Transformer -->
-  <p><strong>MILP-Transformer: A Neural Surrogate Solver for Routing MILPs</strong></p>
-  <p>
-    A transformer-based surrogate solver embedding MILP algebra, constraint violations,
-    and dual signals. ICML-style architecture with refinement steps.
-    <br>
-    <a href="./milp_transformer.pdf">
-      <img src="https://img.shields.io/badge/PDF-Published-red?logo=adobeacrobatreader">
-    </a>
-    <a href="https://github.com/ritwikareddykancharla/milp-transformer">
-      <img src="https://img.shields.io/badge/GitHub-milp--transformer-black?logo=github">
-    </a>
-  </p>
+  <!-- RFM Planner -->
+  <div class="paper-block">
+    <div class="paper-title">Routing Foundation Model (RFM) — Differentiable Simulator for Routing & Planning</div>
+    <p>Unified framework integrating MILP-Transformer, Diffusion Priors, CGT, World Models, and Refinement Networks.</p>
+    <div class="badges">
+      <a href="./rfm_planner.pdf"><img src="https://img.shields.io/badge/PDF-Draft-red?logo=adobeacrobatreader"></a>
+      <a href="https://github.com/ritwikareddykancharla/routingagi"><img src="https://img.shields.io/badge/GitHub-routingagi-black?logo=github"></a>
+    </div>
+  </div>
 
-  <!-- Diffusion Routing -->
-  <p><strong>Diffusion Warm-Start Models for Routing</strong></p>
-  <p>
-    Diffusion models generating feasible warm-starts for large routing MILPs to accelerate solver latency.
-    <br>
-    <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
-    <a href="https://github.com/ritwikareddykancharla/diffusion-routing">
-      <img src="https://img.shields.io/badge/GitHub-diffusion--routing-black?logo=github">
-    </a>
-  </p>
+  <!-- MILP Transformer -->
+  <div class="paper-block">
+    <div class="paper-title">MILP-Transformer — A Neural Surrogate Solver for Routing MILPs</div>
+    <p>Transformer embedding MILP algebra, constraint structures, and feasibility refinements. <strong>ICML 2026 submission in preparation.</strong></p>
+    <div class="badges">
+      <a href="./milp_transformer.pdf"><img src="https://img.shields.io/badge/PDF-Draft-red?logo=adobeacrobatreader"></a>
+      <a href="https://github.com/ritwikareddykancharla/milp-transformer"><img src="https://img.shields.io/badge/GitHub-milp--transformer-black?logo=github"></a>
+    </div>
+  </div>
+
+  <!-- Diffusion -->
+  <div class="paper-block">
+    <div class="paper-title">Diffusion Warm-Start Models for Routing</div>
+    <p>Diffusion priors generating feasible diverse warm-starts that accelerate Gurobi/CPLEX routing solve times.</p>
+    <div class="badges">
+      <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
+      <a href="https://github.com/ritwikareddykancharla/diffusion-routing"><img src="https://img.shields.io/badge/GitHub-diffusion--routing-black?logo=github"></a>
+    </div>
+  </div>
 
   <!-- World Model -->
-  <p><strong>Mamba World Models for SLA & Congestion Forecasting</strong></p>
-  <p>
-    Sequential world models for predicting congestion, SLA slack, and network propagation at Amazon middle-mile scale.
-    <br>
-    <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
-    <a href="https://github.com/ritwikareddykancharla/routing-world-model">
-      <img src="https://img.shields.io/badge/GitHub-routing--world--model-black?logo=github">
-    </a>
-  </p>
+  <div class="paper-block">
+    <div class="paper-title">Mamba World Models for Congestion & SLA Violation Forecasting</div>
+    <p>Sequential dynamics models predicting capacity, delays, propagation, and SLA risk at middle-mile scale.</p>
+    <div class="badges">
+      <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
+      <a href="https://github.com/ritwikareddykancharla/routing-world-model"><img src="https://img.shields.io/badge/GitHub-routing--world--model-black?logo=github"></a>
+    </div>
+  </div>
 
   <!-- Constraint Graph Transformer -->
-  <p><strong>Constraint Graph Transformers</strong></p>
-  <p>
-    Graph architectures modeling MILP constraint–variable interactions across routing and facility networks.
-    <br>
-    <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
-    <a href="https://github.com/ritwikareddykancharla/constraint-graph-transformer">
-      <img src="https://img.shields.io/badge/GitHub-constraint--graph--transformer-black?logo=github">
-    </a>
-  </p>
+  <div class="paper-block">
+    <div class="paper-title">Constraint Graph Transformers</div>
+    <p>Graph transformers modeling inter-facility interactions, constraints, flow structure, and routing dependencies.</p>
+    <div class="badges">
+      <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
+      <a href="https://github.com/ritwikareddykancharla/constraint-graph-transformer"><img src="https://img.shields.io/badge/GitHub-constraint--graph--transformer-black?logo=github"></a>
+    </div>
+  </div>
 
-  <!-- Proximal Refinement Networks -->
-  <p><strong>Proximal Refinement Networks</strong></p>
-  <p>
-    Real-time re-optimization modules correcting routing decisions during disruptions without re-solving the MILP.
-    <br>
-    <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
-    <a href="https://github.com/ritwikareddykancharla/proximal-refinement-networks">
-      <img src="https://img.shields.io/badge/GitHub-proximal--refinement--networks-black?logo=github">
-    </a>
-  </p>
+  <!-- Proximal Refinement -->
+  <div class="paper-block">
+    <div class="paper-title">Proximal Refinement Networks</div>
+    <p>Real-time re-optimization networks adjusting disrupted routing decisions without MILP re-solve.</p>
+    <div class="badges">
+      <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
+      <a href="https://github.com/ritwikareddykancharla/proximal-refinement-networks"><img src="https://img.shields.io/badge/GitHub-proximal--refinement--networks-black?logo=github"></a>
+    </div>
+  </div>
+
 </body>
-
 </html>
