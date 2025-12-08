@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Page Not Found</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Lottie Player -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #fafafa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      text-align: center;
+    }
+    h2 {
+      margin-top: 20px;
+      color: #1A3E73;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <lottie-player
+      src="./404.json"
+      background="transparent"
+      speed="1"
+      style="width: 350px; height: 350px;"
+      loop
+      autoplay>
+    </lottie-player>
+
+    <h2>Oops! This page doesn’t exist.</h2>
+    <p><a href="/">Go back home</a></p>
+  </div>
+</body>
+</html>
