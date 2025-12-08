@@ -43,8 +43,9 @@
   <h2>About</h2>
   <p>
     I work at the intersection of <strong>neural optimization, routing, and large-scale logistics</strong>.
-    My current work focuses on transformer-based surrogate solvers for mixed-integer linear programs (MILPs)
-    and structure-aware models for supply-chain and middle-mile routing.
+    My current research focuses on transformer-based surrogate solvers for mixed-integer linear programs (MILPs),
+    diffusion-based routing priors, constraint graph architectures, and world models for Amazon-scale
+    middle-mile routing.
   </p>
 
   <h2>Research Interests</h2>
@@ -52,27 +53,86 @@
     <span class="tag">Neural Optimization</span>
     <span class="tag">Transformers</span>
     <span class="tag">Routing & Logistics</span>
+    <span class="tag">World Models</span>
+    <span class="tag">Diffusion Models</span>
     <span class="tag">MILP Surrogates</span>
     <span class="tag">Combinatorial Reasoning</span>
-    <span class="tag">cs.AI</span>
+    <span class="tag">Operations Research</span>
   </p>
 
   <h2>Papers & Projects</h2>
 
-  <p><strong>MILP-Transformer: A Neural Surrogate Solver for Large-Scale Routing</strong> (preprint)</p>
+  <!-- RFM -->
+  <p><strong>Routing Foundation Model (RFM)</strong></p>
   <p>
-    A transformer-based neural surrogate for routing MILPs with constraint-specialized Mixture-of-Experts
-    and differentiable refinement steps approximating MILP descent.
+    A long-term research program on surrogate MILP solvers, diffusion routing priors,
+    world models, and constraint graph architectures for large logistics networks.
     <br>
-    <a href="#">[arXiv link – coming soon]</a> ·
-    <a href="#">[Code]</a>
+    <a href="./assets/papers/rfm_monograph.pdf">
+      <img src="https://img.shields.io/badge/PDF-Published-red?logo=adobeacrobatreader">
+    </a>
+    <a href="https://github.com/ritwikareddykancharla/routingagi">
+      <img src="https://img.shields.io/badge/GitHub-Monograph-black?logo=github">
+    </a>
   </p>
 
-  <p><strong>RoutingAGI (research program)</strong></p>
+  <!-- MILP-Transformer -->
+  <p><strong>MILP-Transformer: A Neural Surrogate Solver for Routing MILPs</strong></p>
   <p>
-    A broader line of work on routing foundation models, world models for logistics, and constraint-aware
-    neural planners.
+    A transformer-based surrogate solver embedding MILP algebra, constraint violations,
+    and dual signals. ICML-style architecture with refinement steps.
+    <br>
+    <a href="./assets/papers/milp_transformer.pdf">
+      <img src="https://img.shields.io/badge/PDF-Published-red?logo=adobeacrobatreader">
+    </a>
+    <a href="https://github.com/ritwikareddykancharla/milp-transformer">
+      <img src="https://img.shields.io/badge/GitHub-milp--transformer-black?logo=github">
+    </a>
   </p>
 
+  <!-- Diffusion Routing -->
+  <p><strong>Diffusion Warm-Start Models for Routing</strong></p>
+  <p>
+    Diffusion models generating feasible warm-starts for large routing MILPs to accelerate solver latency.
+    <br>
+    <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
+    <a href="https://github.com/ritwikareddykancharla/diffusion-routing">
+      <img src="https://img.shields.io/badge/GitHub-diffusion--routing-black?logo=github">
+    </a>
+  </p>
+
+  <!-- World Model -->
+  <p><strong>Mamba World Models for SLA & Congestion Forecasting</strong></p>
+  <p>
+    Sequential world models for predicting congestion, SLA slack, and network propagation at Amazon middle-mile scale.
+    <br>
+    <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
+    <a href="https://github.com/ritwikareddykancharla/routing-world-model">
+      <img src="https://img.shields.io/badge/GitHub-routing--world--model-black?logo=github">
+    </a>
+  </p>
+
+  <!-- Constraint Graph Transformer -->
+  <p><strong>Constraint Graph Transformers</strong></p>
+  <p>
+    Graph architectures modeling MILP constraint–variable interactions across routing and facility networks.
+    <br>
+    <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
+    <a href="https://github.com/ritwikareddykancharla/constraint-graph-transformer">
+      <img src="https://img.shields.io/badge/GitHub-constraint--graph--transformer-black?logo=github">
+    </a>
+  </p>
+
+  <!-- Proximal Refinement Networks -->
+  <p><strong>Proximal Refinement Networks</strong></p>
+  <p>
+    Real-time re-optimization modules correcting routing decisions during disruptions without re-solving the MILP.
+    <br>
+    <img src="https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader">
+    <a href="https://github.com/ritwikareddykancharla/proximal-refinement-networks">
+      <img src="https://img.shields.io/badge/GitHub-proximal--refinement--networks-black?logo=github">
+    </a>
+  </p>
 </body>
+
 </html>
