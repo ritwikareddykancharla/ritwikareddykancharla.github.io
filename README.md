@@ -4,7 +4,7 @@
 
 ### 📄 Routing Foundation Model (RFM)
 
-[![PDF](https://img.shields.io/badge/PDF-Published-red?logo=adobeacrobatreader)](./assets/papers/rfm_monograph.pdf)
+[![PDF](https://img.shields.io/badge/PDF-Published-red?logo=adobeacrobatreader)](./rfm_monograph.pdf)
 
 A long-term research program on surrogate MILP solvers, diffusion routing priors,
 world models, and constraint graph architectures for Amazon-scale logistics.
@@ -13,7 +13,7 @@ world models, and constraint graph architectures for Amazon-scale logistics.
 
 ### 📄 MILP-Transformer (ICML Submission)
 
-[![PDF](https://img.shields.io/badge/PDF-Published-red?logo=adobeacrobatreader)](./assets/papers/milp_transformer.pdf)
+[![PDF](https://img.shields.io/badge/PDF-Published-red?logo=adobeacrobatreader)](./milp_transformer.pdf)
 [![GitHub](https://img.shields.io/badge/GitHub-milp--transformer-black?logo=github)](https://github.com/ritwikareddykancharla/milp-transformer)
 
 A structure-aware surrogate solver embedding MILP algebra and dual signals into a transformer.
