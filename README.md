@@ -1,55 +1,18 @@
-## 📚 Current Research Projects (2025)
+# ritwikareddykancharla.github.io
 
----
+Personal research portfolio for [Ritwika Kancharla](https://ritwikareddykancharla.github.io/).
 
-### 📄 Routing Foundation Model (RFM)
+The current page covers five active 2026 workstreams:
 
-[![PDF](https://img.shields.io/badge/PDF-Published-red?logo=adobeacrobatreader)](./rfm_monograph.pdf)
+- ARC-AGI-3 interactive world-model and verification harness
+- ARC-AGI-2 verified program induction
+- AWS Trainium Frontier model and NKI kernel co-design
+- Kaggriculture imitation learning and self-play agents
+- Blackwell CUDA kernel optimization
 
-A long-term research program on surrogate MILP solvers, diffusion routing priors,
-world models, and constraint graph architectures for Amazon-scale logistics.
+It is a dependency-free static site: one `index.html`, inline CSS, and a small
+progressive-enhancement script for scroll reveals. All core content remains
+visible with JavaScript disabled and the layout is tested at desktop and mobile
+widths.
 
----
-
-### 📄 MILP-Transformer (ICML Submission)
-
-[![PDF](https://img.shields.io/badge/PDF-Published-red?logo=adobeacrobatreader)](./milp_transformer.pdf)
-[![GitHub](https://img.shields.io/badge/GitHub-milp--transformer-black?logo=github)](https://github.com/ritwikareddykancharla/milp-transformer)
-
-A structure-aware surrogate solver embedding MILP algebra and dual signals into a transformer.
-
----
-
-### 📄 Diffusion Warm-Start Models for Routing
-
-[![PDF](https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader)]()
-[![GitHub](https://img.shields.io/badge/GitHub-diffusion--routing-black?logo=github)](https://github.com/ritwikareddykancharla/diffusion-routing)
-
-Diffusion-based warm-start generation for large routing MILPs.
-
----
-
-### 📄 SLA & Congestion World Models (Mamba)
-
-[![PDF](https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader)]()
-[![GitHub](https://img.shields.io/badge/GitHub-routing--world--model-black?logo=github)](https://github.com/ritwikareddykancharla/routing-world-model)
-
-Sequential world models predicting congestion, SLA slack, and network propagation.
-
----
-
-### 📄 Constraint Graph Transformers
-
-[![PDF](https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader)]()
-[![GitHub](https://img.shields.io/badge/GitHub-constraint--graph--transformer-black?logo=github)](https://github.com/ritwikareddykancharla/constraint-graph-transformer)
-
-Graph-based transformer models over MILP constraint-variable interaction graphs.
-
----
-
-### 📄 Proximal Refinement Networks
-
-[![PDF](https://img.shields.io/badge/PDF-In%20Progress-yellow?logo=adobeacrobatreader)]()
-[![GitHub](https://img.shields.io/badge/GitHub-proximal--refinement--networks-black?logo=github)](https://github.com/ritwikareddykancharla/proximal-refinement-networks)
-
-Real-time re-optimization layers for adjusting routing decisions under disruptions.
+GitHub Pages publishes `main` from the repository root.
