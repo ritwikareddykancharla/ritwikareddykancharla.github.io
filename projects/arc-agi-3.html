@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Verified world models for ARC-AGI-3 — project report by Ritwika Kancharla.">
+  <title>Verified World Models for ARC-AGI-3 — Ritwika Kancharla</title>
+  <link rel="icon" href="../favicon.svg">
+  <link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+  <header class="site-header"><nav class="wrap"><a class="site-name" href="../index.html">Ritwika Kancharla</a><div class="nav-links"><a href="../index.html#projects">Projects</a><a href="../index.html#publications">Publications</a><a href="https://github.com/ritwikareddykancharla">GitHub ↗</a></div></nav></header>
+  <main>
+    <header class="article-header"><div class="wrap">
+      <p class="eyebrow">Research report · ARC-AGI-3 · September 2026</p>
+      <h1>Verified world models for interactive ARC</h1>
+      <p class="dek">Can a 27B open model solve unfamiliar interactive games if perception, memory, causal evidence, and execution are moved into a deterministic harness?</p>
+      <div class="meta"><span>Ritwika Kancharla</span><span>Qwen3.8-27B</span><span>Python + vLLM</span><span>H200 development; Kaggle RTX 6000 target</span><span class="tag">ongoing</span></div>
+      <div class="article-actions"><a class="button" href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3">Competition ↗</a><a class="button" href="https://github.com/ritwikareddykancharla/arc-agi3/pull/6">Development PR ↗</a></div>
+    </div></header>
+
+    <div class="wrap article-layout">
+      <aside class="toc"><h2>Contents</h2><ol><li><a href="#abstract">Abstract</a></li><li><a href="#problem">1. Problem</a></li><li><a href="#method">2. Method</a></li><li><a href="#representations">3. Representations</a></li><li><a href="#experiments">4. Experiments</a></li><li><a href="#failures">5. Failure analysis</a></li><li><a href="#results">6. Results</a></li><li><a href="#limits">7. Limits and next tests</a></li></ol></aside>
+      <article class="article-body">
+        <div class="abstract" id="abstract"><h2>Abstract</h2><p>ARC-AGI-3 tasks are hidden interactive environments. An agent must discover controls, infer an objective, preserve knowledge across levels, and minimize real actions. This project treats the language model as a hypothesis generator and the harness as the empirical authority. The harness records every transition, extracts exact structures, tests proposed mechanics against history, and compiles stable plans into deterministic actions. In controlled development runs, Qwen3.8-27B cleared all 14 levels across two public games. This is evidence about the harness on those games, not a score over the full public set and not yet a clean-start generalization result.</p></div>
+
+        <h2 id="problem">1. Problem</h2>
+        <p>In static ARC, a solver sees input-output examples. In ARC-AGI-3, the examples must be created through interaction. A frame may contain the playable world, a heads-up display, demonstrations of a hidden transformation, selectable tools, or several nested subproblems. The same legal action can move an avatar, change a distant status panel, select a color, or do nothing because a precondition is absent.</p>
+        <p>A plain language-model loop struggles for three recurring reasons. It transcribes pixels instead of constructing objects, keeps several verbal hypotheses alive without testing them, and re-derives settled facts after context grows. More reasoning tokens help only when the representation is right.</p>
+        <div class="callout"><strong>Research question.</strong> How much of the gap between a frontier reasoning model and a 27B open model can be closed by improving the interface around the model rather than changing its weights?</div>
+
+        <h2 id="method">2. Method: model proposes, controller verifies</h2>
+        <figure class="method-figure">
+          <div class="pipeline"><div class="pipeline-step">Observe<br>lossless grid + image</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Represent<br>objects + relations</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Hypothesize<br>rules + objective</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Verify<br>replay history</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Act<br>guarded plan</div></div>
+          <figcaption>The agent loop. Real environment actions are expensive; replay, parsing, search, and critique are local.</figcaption>
+        </figure>
+        <p>Every real action produces an immutable transition record: the before frame, requested action, after frame, changed cells, connected regions, level boundary, and completion state. Notes summarize beliefs, but notes never replace the ledger. When a new observation contradicts a claim, the controller can point to the exact transition rather than asking the model to reread a long transcript.</p>
+        <p>The design combines ideas from Schema-style semantic scaffolding and Retrodict-style executable verification:</p>
+        <ol>
+          <li><strong>Semantic scaffolding.</strong> The controller offers candidate objects and relations: panels, containers, slots, repeated glyphs, lattices, translations, reflections, and distant effects.</li>
+          <li><strong>Hypothesis ledger.</strong> A belief records evidence for, evidence against, a discriminating prediction, and its status. Rejected ideas should not return without new evidence.</li>
+          <li><strong>Executable playbooks.</strong> Once a mechanic is stable, the model writes only the missing game logic into a harness-owned scaffold. The artifact is validated before it can replace the previous version.</li>
+          <li><strong>Retrodiction.</strong> Candidate dynamics replay recorded actions from the initial state and report the first mismatch, per-cell accuracy, crash status, and exact-transition accuracy separately.</li>
+          <li><strong>Guarded execution.</strong> Multi-action plans check expected cells and level state after each action. A mismatch stops the batch and returns evidence to the model.</li>
+        </ol>
+
+        <h2 id="representations">3. What the harness represents</h2>
+        <h3>Effects rather than raw diffs</h3>
+        <p>A transition is partitioned into the dominant changed region, secondary regions, and nonlocal secondary regions. Exact rigid translations are reported when removed pixels map to added pixels under one displacement. This prevents a local avatar movement from hiding a small but causal key, counter, or inventory change elsewhere.</p>
+        <h3>Nested containers as graphs</h3>
+        <p>For <code>sb26</code>, flat connected components were insufficient. The useful representation is an ordered graph: framed containers contain slots; slots contain solid tokens or hollow references; hollow tokens can point to another same-color container. A depth-first traversal becomes a testable candidate for the ordered target row. The detector reconstructs these structures in roughly 12–15 ms per 64×64 frame while leaving the meaning of an edge for the model to infer.</p>
+        <h3>Persistent lattice maps</h3>
+        <p>Scrolling games require coordinates that survive camera motion. The controller detects tile pitch, estimates camera origin, tracks avatar settlement, stores tile transitions, and separates directly controlled displacement from passive movement such as gravity. This matters because observing left/right controls does not prove that vertical motion is impossible.</p>
+        <h3>Memory policy</h3>
+        <p>Completed early levels are removed from the conversational transcript only when the context window requires it, in first-in-first-out order. Their distilled rules, counterexamples, artifacts, and transition ledger remain available. The current level receives the most detailed history.</p>
+
+        <h2 id="experiments">4. Experimental loop</h2>
+        <p>The development loop does not optimize a hidden leaderboard directly. It compares the model’s reasoning with released Schema traces, locates the first belief that diverges, adds the smallest general controller feature that would expose the missing evidence, and reruns from a clean state when the feature is ready.</p>
+        <div class="table-wrap"><table><thead><tr><th>Game</th><th>Initial model behavior</th><th>Missing representation</th><th>Harness response</th></tr></thead><tbody>
+          <tr><td><code>ft09</code></td><td>Treated repeated panels independently and explored a “fractal zoom” theory.</td><td>Worked examples plus active query; overlapping panel relation.</td><td>Panel pairing, component coordinates, reflection and palette relations.</td></tr>
+          <tr><td><code>sb26</code></td><td>Repeatedly transcribed boxes and filled slots without a stable target.</td><td>Recursive container/reference graph with ordered traversal.</td><td>Container parser, candidate reference edges, DFS alignment, submit-outcome checks.</td></tr>
+          <tr><td><code>cd82</code></td><td>Forced a simulator before enough causal evidence existed.</td><td>Stencil, canvas, roll position, and palette; HUD counter separation.</td><td>Tiny monotone HUD changes cannot force a model checkpoint.</td></tr>
+          <tr><td><code>ls20</code></td><td>Learned local movement but mistook a rotator for the goal.</td><td>Global key/lock roles and distant causal effects.</td><td>Nonlocal effect regions and forced causal note refresh.</td></tr>
+        </tbody></table></div>
+
+        <h2 id="failures">5. What failed, and why it mattered</h2>
+        <h3>An all-or-nothing simulator metric had no gradient</h3>
+        <p>The first verifier counted a transition as correct only when all 4,096 cells matched. One wrong cell and a crash both appeared as zero. Because state rolled forward, one early mistake poisoned all later scores. A placeholder identity model therefore looked no worse than a nearly correct simulator. The verifier now separates invalid code, exact transitions, per-cell accuracy, and the first causal mismatch. New code cannot replace the current artifact unless it satisfies the interface and improves the backtest.</p>
+        <h3>More context could preserve the wrong belief</h3>
+        <p>Persistent notes are useful only when tied to evidence. In an early resumed <code>sb26</code> run, stale notes preserved an erase-and-paint theory even after the action ledger contained a block translation. Restore protocol now sends current notes, their staleness, and controller-verified causal effects together.</p>
+        <h3>Compaction could remove the decisive level</h3>
+        <p>Naive compaction deleted recent evidence or retained verbose early pixel discussions. The policy now keeps the current level intact whenever possible, drops old completed levels in FIFO order, and preserves their compact learned mechanic separately.</p>
+        <h3>Deterministic plans were reasoned about repeatedly</h3>
+        <p>Even after exact target cells were computed, the model sometimes spent thousands of tokens rechecking coordinates. The harness now distinguishes discovery turns from execution turns. Once a plan has passed exact checks, the controller can compile and execute it without another open-ended analysis.</p>
+
+        <h2 id="results">6. Current results</h2>
+        <div class="table-wrap"><table><thead><tr><th>Development game</th><th>Levels completed</th><th>Role in the study</th></tr></thead><tbody>
+          <tr><td><code>ft09</code></td><td>6 / 6</td><td>Relational panels, palette cycles, reflections, and deterministic tile plans.</td></tr>
+          <tr><td><code>sb26</code></td><td>8 / 8</td><td>Recursive containers, reference traversal, submit verification, and cross-level transfer.</td></tr>
+          <tr><td><strong>Total</strong></td><td><strong>14 / 14</strong></td><td>Two-game controlled harness validation using Qwen3.8-27B.</td></tr>
+        </tbody></table></div>
+        <p class="note">Interpretation: the harness has demonstrated that a 27B model can complete these two public games with the accumulated controller improvements. The runs were part of an iterative development process. They do not establish performance on unseen games, do not yet demonstrate the same result from a single frozen clean-start harness, and are not the Kaggle leaderboard score.</p>
+
+        <h2 id="limits">7. Limits and next tests</h2>
+        <ol>
+          <li><strong>Freeze and restart.</strong> Run the final harness from empty memory on the same two games to measure reproducibility without inherited discoveries.</li>
+          <li><strong>Expand game coverage.</strong> Use released traces to prioritize games whose required structures are already supported, then add one general representation per earliest failure.</li>
+          <li><strong>Measure efficiency.</strong> Report wall time, reasoning tokens, real actions, level score, replay accuracy, and controller intervention separately.</li>
+          <li><strong>Offline deployment.</strong> Package the 27B model and harness for Kaggle’s RTX 6000 environment, then measure safe game-level concurrency under KV-cache limits.</li>
+          <li><strong>Distill decisions.</strong> Train on intermediate records—role assignment, discriminating prediction, repair location, and stopping decision—rather than copying final action sequences alone.</li>
+        </ol>
+        <div class="callout"><strong>Central finding.</strong> The open model’s main weakness was not the ability to reason about a correct representation. It was discovering that representation early, preserving it, and converting settled conclusions into deterministic execution.</div>
+      </article>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="wrap footer-row"><span><a href="../index.html">← Research index</a></span><span>Last updated September 2026</span></div></footer>
+</body>
+</html>

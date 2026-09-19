@@ -10,9 +10,14 @@ The current page covers five active 2026 workstreams:
 - Kaggriculture imitation learning and self-play agents
 - Blackwell CUDA kernel optimization
 
-It is a dependency-free static site: one `index.html`, inline CSS, and a small
-progressive-enhancement script for scroll reveals. All core content remains
-visible with JavaScript disabled and the layout is tested at desktop and mobile
-widths.
+It also preserves the earlier routing and neural-optimization research portfolio,
+including the Routing Foundation Model monograph, MILP-Transformer and
+state-space neural combinatorial optimization manuscripts, and the
+Diffusion–Mamba routing preprint series.
+
+It is a dependency-free academic-style static site. `index.html` is the research
+index, `projects/` contains long-form method and experiment reports, and
+`assets/site.css` provides the shared responsive layout. The site requires no
+JavaScript and is tested at desktop and mobile widths.
 
 GitHub Pages publishes `main` from the repository root.
