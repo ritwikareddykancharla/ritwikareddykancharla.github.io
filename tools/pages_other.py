@@ -1,4 +1,4 @@
-"""Trainium, Kaggriculture and routing project pages. Facts come from the project repos and run ledgers."""
+"""Trainium and Kaggriculture project pages. Facts come from the project repos and run ledgers."""
 
 CHART = """<svg viewBox="0 0 860 300" role="img" aria-label="Validation bits per byte at five checkpoints, falling from 1.3951 to 0.9656">
 <g stroke="var(--chart-grid)" stroke-width="1"><line x1="60" y1="40" x2="820" y2="40"/><line x1="60" y1="110" x2="820" y2="110"/><line x1="60" y1="180" x2="820" y2="180"/><line x1="60" y1="250" x2="820" y2="250"/></g>
@@ -143,57 +143,5 @@ KAGG = dict(
       <li>The game is played to the end, and the final cash is compared with a paired game in which the script played throughout.</li>
     </ol>
     <p>The hand-over day moves earlier in stages: the last three days, late investment, operation of an established farm, the opening, and finally all 719 decisions. Each stage must outperform its paired control before the next stage begins.</p>
-""",
-)
-
-# =============================================================================== Routing
-ROUTING = dict(
-    hero=dict(img="lakeside", accent="#8f5f14", pos="50% 55%", alt="A stone lakeside path with flower urns at sunset, leading toward a village under steep hills."),
-    title="Routing Foundation Models | Ritwika Kancharla",
-    description="A 2025 research proposal with prototypes on learned warm starts for vehicle-routing solvers: a MILP-structured encoder, diffusion-based candidate generation, state-space decoding and feasibility repair.",
-    eyebrow="Research proposal, 2025 to 2026",
-    h1="Routing Foundation Models: Learned Warm Starts for Vehicle-Routing Solvers",
-    meta=["Ritwika Kancharla", "2025 to 2026"],
-    links=[("Monograph (PDF)", "../rfm_monograph.pdf"), ("Code", "https://github.com/ritwikareddykancharla/RoutingAGI")],
-    abstract="""<p>Classical routing solvers enforce constraints reliably but are slow to run again on a large network that changes continuously. Neural routing policies are fast but tend to fail where operations cannot tolerate failure: they produce routes that violate a capacity or a time window, and they degrade when the instance distribution shifts. This work proposes a hybrid. A learned model supplies the solver with several diverse starting solutions, estimates near-term changes and makes fast local modifications, while the exact constraints and the solver remain responsible for feasibility.</p>
-<p>The work consists of an 83-page monograph, two shorter manuscripts and prototype code. It is an architecture proposal with prototypes. It does not include a trained system that has been benchmarked against an industrial solver, and no such claim is made.</p>""",
-    body="""
-    <h2 id="problem">Problem statement</h2>
-    <p>The interest in this problem comes from my time in Amazon's Supply Chain Optimization Technologies group, close to routing and middle-mile logistics. The variants of the vehicle-routing problem share most of their structure: depots, vehicles, demand, capacity, time, precedence and travel cost. Training a separate opaque network for each variant discards that shared structure. The goal is one family of components that represents an instance as a system of constraints, and that assists an exact solver without replacing it.</p>
-
-    <h2 id="approach">Proposed components</h2>
-    <h3>MILP-Transformer: a structure-aware encoder</h3>
-    <p>The encoder takes the mixed-integer program itself as input: objective coefficients, variable bounds, constraint coefficients and the incidence between variables and constraints. Attention follows these relations and does not operate on a flattened text description of the instance.</p>
-    <h3>Diffusion model for warm starts</h3>
-    <p>A generative model samples many candidate assignments or tours. Diversity matters, because a solver benefits more from several distinct feasible starting points than from many variations of one greedy route. Denoising is biased toward valid capacity, timing and pickup-delivery pairing.</p>
-    <h3>State-space decoding for long routes</h3>
-    <p>A large instance decomposes into many vehicle tours, so the output sequence is long. State-space decoders (Mamba) scale linearly with sequence length and maintain a running state, which avoids quadratic attention at every output step.</p>
-    <h3>Feasibility repair</h3>
-    <p>A refinement step projects a nearly feasible solution onto the feasible set and can pass the result to a conventional solver.</p>
-
-    <h2 id="variants">Problem variants covered</h2>
-    <div class="tablewrap"><table>
-      <thead><tr><th>Variant</th><th>Distinguishing constraint</th><th>Component studied</th></tr></thead>
-      <tbody>
-        <tr><td>CVRP</td><td>Vehicle capacity, return to depot</td><td>Diffusion warm starts with Mamba refinement</td></tr>
-        <tr><td>VRPTW</td><td>Arrival time windows, waiting</td><td>Time-conditioned generation</td></tr>
-        <tr><td>PDVRP</td><td>Pickup must precede its delivery</td><td>Paired tokens, precedence-aware repair</td></tr>
-        <tr><td>MDVRP</td><td>Assignment of customers to depots</td><td>Depot-aware constraint graphs</td></tr>
-        <tr><td>DVRP</td><td>Orders arrive during execution</td><td>Rollouts of a learned dynamics model, fast re-planning</td></tr>
-      </tbody>
-    </table></div>
-
-    <h2 id="papers">Manuscripts and code</h2>
-    <ul>
-      <li><a href="../rfm_monograph.pdf"><em>Routing Foundation Model: A Unified Neural Optimization Framework for Large-Scale Routing and MILPs</em></a>. Monograph, 83 pages.</li>
-      <li><a href="../milp_transformer.pdf"><em>MILP-Transformer: A Structure-Aware Neural Surrogate for Large-Scale Routing Optimization</em></a>. Manuscript.</li>
-      <li><a href="../ssm-nco.pdf"><em>State-Space Autoregressive Decoding for Neural Combinatorial Optimization</em></a>. Position paper.</li>
-      <li>Code: <a href="https://github.com/ritwikareddykancharla/diffusion-mamba-routing">diffusion-mamba-routing</a>, <a href="https://github.com/ritwikareddykancharla/constraint-graph-transformer">constraint-graph-transformer</a>, <a href="https://github.com/ritwikareddykancharla/routing-world-model">routing-world-model</a>, <a href="https://github.com/ritwikareddykancharla/proximal-refinement-networks">proximal-refinement-networks</a>.</li>
-    </ul>
-    <p>None of these manuscripts has been peer reviewed.</p>
-
-    <h2 id="limitations">Limitations and required evaluation</h2>
-    <p>The questions that determine whether the approach is useful remain open: the contribution of each component, the feasibility rate of the generated solutions, the optimality gap, the solver time that a warm start saves, transfer across instance sizes, and behaviour under network disruption.</p>
-    <p>The appropriate next step is a comparison on public instance sets of three configurations on identical problems: the neural model alone, the solver alone, and the two combined. The comparison should report feasibility separately from solution quality, measure wall-clock time to a common optimality gap, and test transfer across instance sizes.</p>
 """,
 )
