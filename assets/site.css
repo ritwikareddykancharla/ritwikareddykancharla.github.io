@@ -375,6 +375,9 @@ td { padding: 13px 16px; border-top: 1px solid var(--rule); color: var(--body); 
 td:first-child { color: var(--ink); }
 .r { text-align: right; font-family: var(--mono); font-size: .86rem; white-space: nowrap; }
 th.r { font-size: 10.5px; }
+.st { display: inline-block; padding: 3px 8px; font: 500 10.5px var(--mono); white-space: nowrap; border: 1px solid var(--rule); color: var(--soft); }
+.st-done { border-color: var(--ok); color: var(--ok); }
+.st-prog { border-color: var(--signal); color: var(--signal); }
 tr.best td { background: var(--signal-soft); color: var(--ink); }
 tr.best td:first-child { box-shadow: inset 4px 0 0 var(--signal); }
 

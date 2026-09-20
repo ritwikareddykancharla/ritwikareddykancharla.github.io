@@ -208,7 +208,7 @@ ARC3 = dict(
     links=[("Competition", "https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3"),
            ("Hardening sweep (PR #6)", "https://github.com/ritwikareddykancharla/arc-agi3/pull/6")],
     abstract="""<p>ARC-AGI-3 evaluates an agent on small interactive games for which no rules, goals or instructions are provided. This project studies whether an open-weight 27B language model (Qwen3.8-27B), used without any fine-tuning, can solve such games when it is paired with a deterministic software harness. The model proposes hypotheses about the game. The harness owns perception, an immutable record of every transition, replay verification of each proposed rule, bounded search, and guarded execution of plans.</p>
-<p>The system has completed six of the 25 released public games with the maximum local score of 100: <code>ft09</code> (6 of 6 levels, 75 actions), <code>sb26</code> (8 of 8, 124 actions), <code>r11l</code> (6 of 6, 138 actions), <code>ka59</code> (7 of 7, 300 actions), <code>lp85</code> (8 of 8, 162 actions) and <code>tr87</code> (6 of 6, 189 actions). The final level of <code>ka59</code> used an action prior derived from a public reference trace, which is disclosed below. Seven further games have been attempted and are partially solved or unsolved. All results are on public games that were studied during development. They validate the harness design and are not an estimate of leaderboard performance.</p>""",
+<p>The system has completed six of the 25 released public games with the maximum local score of 100: <code>ft09</code> (6 of 6 levels, 75 actions), <code>sb26</code> (8 of 8, 124 actions), <code>r11l</code> (6 of 6, 138 actions), <code>ka59</code> (7 of 7, 300 actions), <code>lp85</code> (8 of 8, 162 actions) and <code>tr87</code> (6 of 6, 189 actions). The final level of <code>ka59</code> used an action prior derived from a public reference trace, which is disclosed below. Eight further games have been attempted and are partially solved or unsolved. All results are on public games that were studied during development. They validate the harness design and are not an estimate of leaderboard performance.</p>""",
     body=f"""
     <figure class="fig"><div class="plate"><div class="frames">
       <div><div class="frame"><img src="{I3}ft09-play.gif" width="256" height="270" alt="Animation of the game ft09 played from the first level to the last. Tiles in a grid change colour one click at a time until each level completes."></div><span class="cap">ft09: 6 of 6 levels, 75 actions</span></div>
@@ -378,17 +378,36 @@ ARC3 = dict(
     <h2 id="results">Results</h2>
     <p>Six of the 25 public games are complete with the maximum local score of 100. Each entry below opens to a replay of the actual run, recorded action by action, together with an account of where the model alone got stuck, what the harness supplies for that game family, and why that is sufficient. A replay loads only when its entry is opened.</p>
     {GAMES}
-    <h3>Games in progress</h3>
+    <h3>All 25 public games</h3>
+    <p>Six games are complete, eight are in progress and eleven have not been attempted.</p>
     <div class="tablewrap wide"><table>
-      <thead><tr><th>Game</th><th class="r">Levels</th><th class="r">Actions</th><th>Status</th></tr></thead>
+      <thead><tr><th>Game</th><th>Status</th><th class="r">Levels</th><th class="r">Actions</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td><code>ar25</code></td><td class="r">1 / 8</td><td class="r">42</td><td>Level 1 cleared at action 21; checkpointed</td></tr>
-        <tr><td><code>cn04</code></td><td class="r">1</td><td class="r">33</td><td>Level 1 cleared at action 21; in progress</td></tr>
-        <tr><td><code>bp35</code></td><td class="r">0 / 9</td><td class="r">20</td><td>Checkpointed; motivated the viewport, lattice-map and equivalence work</td></tr>
-        <tr><td><code>dc22</code></td><td class="r">0</td><td class="r">17</td><td>Checkpointed after a context overflow that has since been fixed</td></tr>
-        <tr><td><code>g50t</code></td><td class="r">0</td><td class="r"></td><td>In progress</td></tr>
-        <tr><td><code>ls20</code>, <code>cd82</code></td><td class="r">0</td><td class="r"></td><td>Unsolved pilot runs</td></tr>
-        <tr><td>12 other games</td><td class="r"></td><td class="r"></td><td>Not yet attempted</td></tr>
+        <tr class="best"><td><code>ft09</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">6 / 6</td><td class="r">75</td><td>Single run from empty memory</td></tr>
+        <tr class="best"><td><code>sb26</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">8 / 8</td><td class="r">124</td><td>Across resumed sessions</td></tr>
+        <tr class="best"><td><code>r11l</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">6 / 6</td><td class="r">138</td><td>Every level below its human baseline</td></tr>
+        <tr class="best"><td><code>ka59</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">7 / 7</td><td class="r">300</td><td>Level 7 used a disclosed prior from a public trace</td></tr>
+        <tr class="best"><td><code>lp85</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">8 / 8</td><td class="r">162</td><td>Across resumed sessions</td></tr>
+        <tr class="best"><td><code>tr87</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">6 / 6</td><td class="r">189</td><td>No resets, no mispredicted action</td></tr>
+        <tr><td><code>su15</code></td><td><span class="st st-prog">in progress</span></td><td class="r">2 / 9</td><td class="r">50</td><td>Level 3 checkpointed</td></tr>
+        <tr><td><code>ar25</code></td><td><span class="st st-prog">in progress</span></td><td class="r">1 / 8</td><td class="r">42</td><td>Level 1 cleared at action 21; checkpointed</td></tr>
+        <tr><td><code>cn04</code></td><td><span class="st st-prog">in progress</span></td><td class="r">1</td><td class="r">33</td><td>Level 1 cleared at action 21; in progress</td></tr>
+        <tr><td><code>bp35</code></td><td><span class="st st-prog">in progress</span></td><td class="r">0 / 9</td><td class="r">20</td><td>Checkpointed; motivated the viewport, lattice-map and equivalence work</td></tr>
+        <tr><td><code>dc22</code></td><td><span class="st st-prog">in progress</span></td><td class="r">0</td><td class="r">17</td><td>Checkpointed after a context overflow that has since been fixed</td></tr>
+        <tr><td><code>g50t</code></td><td><span class="st st-prog">in progress</span></td><td class="r">0</td><td class="r"></td><td>In progress</td></tr>
+        <tr><td><code>ls20</code></td><td><span class="st st-prog">in progress</span></td><td class="r">0</td><td class="r"></td><td>Unsolved pilot run</td></tr>
+        <tr><td><code>cd82</code></td><td><span class="st st-prog">in progress</span></td><td class="r">0</td><td class="r"></td><td>Unsolved pilot run</td></tr>
+        <tr><td><code>lf52</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
+        <tr><td><code>m0r0</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
+        <tr><td><code>re86</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
+        <tr><td><code>s5i5</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
+        <tr><td><code>sc25</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
+        <tr><td><code>sk48</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
+        <tr><td><code>sp80</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
+        <tr><td><code>tn36</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
+        <tr><td><code>tu93</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
+        <tr><td><code>vc33</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
+        <tr><td><code>wa30</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
       </tbody>
     </table></div>
     <div class="note"><b>Interpretation</b><p>A score of 100 is the local scorecard value for one public game. Public development results are not Kaggle leaderboard results, and a completed public game is evidence about the harness and not about hidden games.</p></div>
@@ -409,7 +428,7 @@ ARC3 = dict(
       <li>Several harness components were written after studying a failure on a specific game, and two of them (the token simulator and the pickup representation) were informed by public Schema traces. No game identifier or solution is encoded, but the risk that the harness is fitted to the public mechanics is real and can only be measured on games that were not studied.</li>
       <li>The <code>sb26</code>, <code>ka59</code> and <code>lp85</code> results were obtained across resumed sessions, and level 7 of <code>ka59</code> used a public-trace prior.</li>
       <li>The model is served on an H200. The competition requires an offline submission, and the model and harness have not yet been packaged for it.</li>
-      <li>Twelve of the 25 public games have not been attempted.</li>
+      <li>Eleven of the 25 public games have not been attempted.</li>
     </ul>
 
     <h2 id="future">Future work</h2>
