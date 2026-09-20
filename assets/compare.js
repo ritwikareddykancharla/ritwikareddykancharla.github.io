@@ -2,16 +2,17 @@
    built by tools/build_arc3_compare.py from the saved runs. One shared clock: step k is the k-th real action
    on both sides, so the side that finishes first simply stops and waits. */
 (() => {
-  const el = document.querySelector(".cmp");
-  if (!el) return;
   const PALETTE = ["#ffffff", "#cccccc", "#999999", "#666666", "#333333", "#000000", "#e53aa3", "#ff7bcc",
                    "#f93c31", "#1e93ff", "#88d8f1", "#ffdc00", "#ff851b", "#921231", "#4fcc30", "#a356d6"];
   const N = 64;
   const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  fetch(el.dataset.src).then((r) => r.json()).then((data) => {
-    const sides = [["without", el.querySelector('[data-side="without"]')], ["with", el.querySelector('[data-side="with"]')]]
-      .map(([key, root]) => ({ key, root, d: data[key], ctx: root.querySelector("canvas").getContext("2d") }));
+  function mount(el) {
+   if (el.dataset.mounted) return;
+   el.dataset.mounted = "1";
+   fetch(el.dataset.src).then((r) => r.json()).then((data) => {
+    const sides = [...el.querySelectorAll("[data-side]")]
+      .map((root) => ({ key: root.dataset.side, root, d: data[root.dataset.side], ctx: root.querySelector("canvas").getContext("2d") }));
     sides.forEach((s) => {                         // frames are stored as changes; rebuild every frame once
       let cur = s.d.start.map((r) => r.split(""));
       s.frames = [s.d.start];
@@ -42,13 +43,29 @@
         ctx.fillStyle = PALETTE[parseInt(rows[y][x], 16)];
         ctx.fillRect(at(x), at(y), at(x + 1) - at(x), at(y + 1) - at(y));
       }
-      if (prev) {                                  // outline the cells this action changed
-        let x0 = N, y0 = N, x1 = -1, y1 = -1, n = 0;
-        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (rows[y][x] !== prev[y][x]) { n++; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+      if (prev) {                                  // outline each group of cells this action changed
+        const ch = new Uint8Array(N * N); let n = 0;
+        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (rows[y][x] !== prev[y][x]) { ch[y * N + x] = 1; n++; }
         if (n && n < 400) {
-          const bx = at(x0) - 3 * u, by = at(y0) - 3 * u, bw = at(x1 + 1) - at(x0) + 6 * u, bh = at(y1 + 1) - at(y0) + 6 * u;
-          ctx.lineWidth = 3 * u; ctx.strokeStyle = "#ffffff"; ctx.strokeRect(bx, by, bw, bh);
-          ctx.lineWidth = 1.5 * u; ctx.strokeStyle = "#111111"; ctx.strokeRect(bx, by, bw, bh);
+          const seen = new Uint8Array(N * N), boxes = [];
+          for (let i = 0; i < N * N; i++) {
+            if (!ch[i] || seen[i]) continue;
+            let x0 = N, y0 = N, x1 = -1, y1 = -1; const stack = [i]; seen[i] = 1;
+            while (stack.length) {                 // cells within two cells of each other belong to one group
+              const k = stack.pop(), cx = k % N, cy = (k - cx) / N;
+              x0 = Math.min(x0, cx); y0 = Math.min(y0, cy); x1 = Math.max(x1, cx); y1 = Math.max(y1, cy);
+              for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+                const nx = cx + dx, ny = cy + dy, q = ny * N + nx;
+                if (nx >= 0 && ny >= 0 && nx < N && ny < N && ch[q] && !seen[q]) { seen[q] = 1; stack.push(q); }
+              }
+            }
+            boxes.push([x0, y0, x1, y1]);
+          }
+          if (boxes.length <= 12) boxes.forEach(([x0, y0, x1, y1]) => {
+            const bx = at(x0) - 3 * u, by = at(y0) - 3 * u, bw = at(x1 + 1) - at(x0) + 6 * u, bh = at(y1 + 1) - at(y0) + 6 * u;
+            ctx.lineWidth = 3 * u; ctx.strokeStyle = "#ffffff"; ctx.strokeRect(bx, by, bw, bh);
+            ctx.lineWidth = 1.5 * u; ctx.strokeStyle = "#111111"; ctx.strokeRect(bx, by, bw, bh);
+          });
         }
       }
       if (click && click.x != null) {              // where the model clicked
@@ -66,10 +83,13 @@
         const finished = cur && s.d.total_levels && cur.levels >= s.d.total_levels;
         paint(s.ctx, rows, levelUp ? null : prev, levelUp ? null : cur);
         s.root.querySelector(".cmp-acts").textContent = k;
+        const name = s.root.querySelector(".cmp-name");
+        if (name) name.textContent = !cur ? "" : cur.x != null ? "click (" + cur.x + ", " + cur.y + ")" : (cur.a || "");
+        s.root.classList.toggle("miss", !!(cur && cur.mispredicted));
         s.root.querySelector(".cmp-lv").textContent = cur ? cur.levels : 0;
         const say = s.root.querySelector(".cmp-say"), eff = s.root.querySelector(".cmp-eff");
         say.textContent = cur ? cur.say : "Opening frame. No action taken yet.";
-        eff.textContent = !cur ? "" : finished ? "Level " + cur.levels + " cleared. Game complete." : levelUp ? "Level " + cur.levels + " cleared. Showing the start of level " + (cur.levels + 1) + "." : cur.changed ? cur.changed + " cells changed" : "No visible effect";
+        eff.textContent = !cur ? "" : cur.mispredicted && !levelUp ? "Outcome differed from the prediction: the plan was halted here" : finished ? "Level " + cur.levels + " cleared. Game complete." : levelUp ? "Level " + cur.levels + " cleared. Showing the start of level " + (cur.levels + 1) + "." : cur.changed ? cur.changed + " cells changed" : "No visible effect";
         eff.dataset.kind = !cur ? "" : levelUp ? "win" : cur.changed ? "hit" : "miss";
         s.root.classList.toggle("done", step >= n);
         s.root.classList.toggle("won", step >= n && s.d.steps[n - 1].levels > 0);
@@ -89,7 +109,7 @@
     play.addEventListener("click", () => (timer ? stop() : start()));
     el.querySelector(".cmp-prev").addEventListener("click", () => { stop(); step = Math.max(0, step - 1); render(); });
     el.querySelector(".cmp-next").addEventListener("click", () => { stop(); step = Math.min(total, step + 1); render(); });
-    range.addEventListener("input", () => { stop(); step = +range.value; render(); });
+    range.addEventListener("input", () => { const to = +range.value; stop(); step = to; render(); });   // read the value first: stop() redraws and would reset it
     const fast = el.querySelector(".cmp-speed");
     fast.addEventListener("click", () => { speed = (speed + 1) % SPEEDS.length; fast.textContent = SPEEDS[speed][0] + "\u00d7"; if (timer) { clearInterval(timer); timer = 0; start(); } });
     fast.textContent = SPEEDS[speed][0] + "\u00d7";
@@ -98,9 +118,18 @@
     let rz = 0;
     addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(render, 120); });
 
-    if (!calm && "IntersectionObserver" in window) {   // start once, the first time the player is on screen
+    if (el.closest("details")) { if (!calm) setTimeout(() => { if (!timer && step === 0) start(); }, 500); }
+    else if (!calm && "IntersectionObserver" in window) {   // start once, the first time the player is on screen
       const io = new IntersectionObserver((e) => { if (e[0].isIntersecting) { io.disconnect(); setTimeout(() => { if (!timer && step === 0) start(); }, 700); } }, { threshold: 0.55 });
       io.observe(el);
     }
-  }).catch(() => { el.querySelector(".cmp-count").textContent = "The comparison data could not be loaded."; });
+   }).catch(() => { el.querySelector(".cmp-count").textContent = "The replay data could not be loaded."; });
+  }
+
+  // Players inside a closed <details> load their data only when it is first opened, so they cost nothing until then.
+  document.querySelectorAll(".cmp").forEach((el) => {
+    const box = el.closest("details");
+    if (!box || box.open) return mount(el);
+    box.addEventListener("toggle", () => { if (box.open) mount(el); });
+  });
 })();

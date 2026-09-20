@@ -7,7 +7,7 @@ from pathlib import Path
 
 FONTS = ("https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500"
          "&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400"
-         "&family=Figtree:wght@400;500;600;700;800&display=swap")
+         "&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap")
 EMAIL = "ritwikareddykancharla@gmail.com"
 GITHUB = "https://github.com/ritwikareddykancharla"
 # the stylesheet keeps its name, so browsers holding an older copy must be told it changed

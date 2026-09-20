@@ -79,7 +79,7 @@ EVIDENCE = "".join([
 def _side(key, title, sub):
     return (f'<div class="cmp-side" data-side="{key}"><p class="cmp-h"><b>{title}</b><span>{sub}</span></p>'
             '<div class="cmp-screen"><canvas width="384" height="384" aria-hidden="true"></canvas><span class="cmp-badge"></span></div>'
-            '<p class="cmp-stats"><span>actions <b class="cmp-acts">0</b></span><span>levels cleared <b class="cmp-lv">0</b></span><span class="cmp-eff"></span></p>'
+            '<p class="cmp-stats"><span>actions <b class="cmp-acts">0</b></span><span>levels cleared <b class="cmp-lv">0</b></span><span class="cmp-name"></span><span class="cmp-eff"></span></p>'
             '<p class="cmp-k">What the model said before this action</p><p class="cmp-say" aria-live="off"></p></div>')
 
 
@@ -103,6 +103,71 @@ COMPARE = ('<figure class="fig wide"><div class="plate"><div class="cmp" data-sr
            'The same run then clears the remaining five levels, at actions 11, 25, 41, 62 and 75, without a single action whose outcome the model had not predicted.</p>'
            '<div class="note"><b>Not a controlled experiment</b><p>The two runs differ in more than the harness. The left run used an earlier checkpoint (Qwen3.6-27B-FP8) and the right run used Qwen3.8-27B. '
            'The comparison illustrates the failure modes listed above; it does not measure the size of the harness effect.</p></div>')
+
+
+CTRL = ('<div class="cmp-ctrl"><button class="btn primary cmp-play" type="button">Play</button>'
+        '<button class="btn cmp-prev" type="button" aria-label="Previous action">&larr;</button>'
+        '<button class="btn cmp-next" type="button" aria-label="Next action">&rarr;</button>'
+        '<button class="btn cmp-speed" type="button" aria-label="Playback speed">2&times;</button>'
+        '<input class="cmp-range" type="range" min="0" max="1" value="0" step="1" aria-label="Action number">'
+        '<span class="cmp-count">loading</span></div>')
+
+
+def game(name, levels, actions, calls, agent, human, condition, stuck, harness, helps, note=""):
+    top = max(human)
+    rows = "".join(f'<div class="bar-row"><span class="bar-l">L{i}</span><div class="bar-pair">'
+                   f'<i class="bar-h" style="width:{h / top * 84:.1f}%"><em>{h}</em></i>'
+                   f'<i class="bar-a" style="width:{a / top * 84:.1f}%"><em>{a}</em></i></div></div>'
+                   for i, (a, h) in enumerate(zip(agent, human), 1))
+    items = "".join(f"<li>{x}</li>" for x in harness)
+    note = f'<p class="game-note">{note}</p>' if note else ""
+    return (f'<details class="ev game"><summary><span class="ev-tag">{levels} / {levels}</span><code>{name}</code>'
+            f'<span class="ev-title">{condition}</span><span class="ev-stat">{actions} actions &middot; human {sum(human)}</span></summary>'
+            f'<div class="game-body"><div class="cmp" data-src="../assets/data/replay-{name}.json">'
+            f'<div class="cmp-side" data-side="run"><div class="cmp-screen"><canvas width="384" height="384" aria-hidden="true"></canvas><span class="cmp-badge"></span></div>'
+            '<p class="cmp-stats"><span>actions <b class="cmp-acts">0</b></span><span>levels cleared <b class="cmp-lv">0</b></span><span class="cmp-name"></span><span class="cmp-eff"></span></p>'
+            '<p class="cmp-k">Reason logged with this action</p><p class="cmp-say"></p></div>' + CTRL + '</div>'
+            f'<div class="game-notes"><h4>Where the model alone got stuck</h4><p>{stuck}</p>'
+            f'<h4>What the harness supplies</h4><ul>{items}</ul>'
+            f'<h4>Why that is enough</h4><p>{helps}</p>{note}'
+            f'<h4>Actions per level</h4><div class="bars">{rows}</div>'
+            f'<p class="bars-key"><i class="bar-h"></i>human baseline <i class="bar-a"></i>this system &nbsp; {calls} model calls in total</p></div></div></details>')
+
+
+GAMES = "".join([
+    game("ft09", 6, 75, 26, [4, 7, 14, 16, 21, 13], [43, 12, 23, 28, 65, 37],
+         "Single run from empty memory; no mispredicted action",
+         "A flat list of coloured regions hides the fact that each panel contains a worked example of its own target. The model treated the panels as separate puzzles, and on later levels it lost track of palettes that change from level to level and of glyphs that cycle through several colours.",
+         ["A table of tile positions for every repeated lattice, in panel coordinates and not pixel coordinates", "Ordered runs of solid swatches, so that a miniature can be read as a sequence", "Observed forward and reverse palette edges: which colour a click turns into which", "A guard that stops an empty marker with a uniform surround from being read as a tile", "Replay certification of a complete glyph plan, followed by deterministic execution"],
+         "With panel coordinates and the miniature side by side, the comparison between them is a lookup that the model performs reliably. The plan for a level is then certified by replay before any action is spent, which is why no action in this run had an outcome the model had not predicted."),
+    game("sb26", 8, 124, 90, [9, 15, 15, 15, 17, 19, 17, 17], [18, 28, 18, 19, 31, 23, 58, 18],
+         "Completed across resumed sessions; 13 mispredicted actions",
+         "Flat objects cannot express containers nested inside containers, hollow tokens that refer to another box, a reading order that recurses or cycles, or a stable assignment of tokens to slots. The model described individual boxes correctly and could not combine them.",
+         ["A container and reference graph: boxes contain slots, slots contain solid tokens or hollow references", "A finite recursive assignment solver over that graph", "Verification of the goal predicate against real submissions", "Decision guidance that points at the contradicting transition when notes and record disagree", "Certified plan compilation and automatic execution, including cyclic traversal"],
+         "The graph gives the model one object to reason about in place of dozens of rectangles. It proposed the depth-first reading itself; the harness checked that reading against every completed level and then solved the assignment, so later levels were mostly bookkeeping.",
+         "Every one of the 13 mispredicted actions halted its plan at once, which is visible in the replay as a highlighted step."),
+    game("r11l", 6, 138, 145, [10, 18, 39, 18, 28, 25], [22, 33, 51, 26, 52, 49],
+         "Every level below its human baseline; pickup representation informed by a public reference trace",
+         "The model treated the markers at the centre of each graph as decoration, so it never formed the idea that a marker is the mean position of its nodes. Later, the harness itself approximated octagon collisions with bounding boxes, and a connector line that crossed a marker contaminated its colour signature.",
+         ["A graph parser that recovers systems, nodes and the floor-mean marker of each system", "Ordered pickup signatures restricted to the item palette", "Exact octagon overlap computed from rendered cells", "A planner for capture and docking that moves whole footprints", "Verified execution across several systems, protecting docks that are already complete"],
+         "Once the marker is defined as a computed quantity, moving it to a target is a geometry problem that the planner solves exactly. The model's role reduces to choosing which system to complete next and to designing the probe that confirmed how pickups are collected."),
+    game("ka59", 7, 300, 2, [11, 38, 33, 39, 20, 46, 113], [28, 109, 51, 51, 33, 132, 326],
+         "Levels 1 to 6 planned by the simulator; level 7 used a disclosed prior from a public trace",
+         "The model represented boxes on the screen and not objects on a lattice, read the digits on tokens as labels when they are launch distances, and kept retrying direct movement after contact had launched a different object. In 152 calls and 614,648 completion tokens it never cleared level 2.",
+         ["A parser for tokens, frames, walls and countdown gauges on a 3-pixel lattice", "An object and contact simulator: direct moves, bump launches, shoves, overshoot, ranged countdown launches", "Replay of the simulator against recorded transitions (417 of 417 reference and 110 of 110 original)", "An A* planner and a compiler from plans to sparse per-action expectations", "Checked execution in batches of at most 16 actions"],
+         "The mechanics are deterministic, so once they are executable the game becomes a search problem. This run needed only two model calls; the rest was planning and checked execution.",
+         "On level 7 the generic search exceeded one million states. The 113 actions shown for that level come from a prior pruned from a public Schema trajectory and verified from the real entry state, so that level is not evidence of generalisation."),
+    game("lp85", 8, 162, 147, [7, 41, 23, 17, 14, 20, 13, 27], [17, 38, 31, 16, 41, 60, 26, 159],
+         "Completed across resumed sessions; the final 21 actions needed no model call",
+         "Level 2 couples several tokens on interlocking tracks, and the model spent a full ten-action lap on one row and reversed its only useful move. Level 3 replaces the rectangular layout with two overlapping sparse cycles, which a rectangular parser split into unrelated columns. On level 8 it transcribed visible squares repeatedly and did not see that one operation appears at three scales.",
+         ["Exact tile permutations learned from observed transitions, for rows, perimeters, pinwheels and sparse cycles", "A sparse lattice parser: dominant aligned phase, eight-neighbour tile graph, bounded cycle enumeration", "Tracks recovered as a diagonal lead-in followed by a straight stem, with entry registers and a shared conveyor", "Joint search over all token positions, with tokens tracked by halo colour", "Plans compiled to checked actions: every token coordinate is verified after every click"],
+         "Each control is a permutation of tile positions, and a permutation can be learned exactly from one or two observations. After that, reaching the targets is a joint shortest-path search. On level 8 the controller found a 20-action plan after six probes and used 27 actions in total against a human reference of 159."),
+    game("tr87", 6, 189, 65, [32, 38, 41, 36, 18, 24], [54, 58, 40, 45, 71, 146],
+         "Completed with no resets and no mispredicted action; the final 23 actions needed no model call",
+         "The game is about symbols and a dictionary that maps one symbol to another. The model read editable glyph identities as rotations and reflections of one another, transcribed the finite symbol wheels again and again, took editable dictionary boxes for fixed examples, and could not compose the final chain of two mappings (10 to 7 to 11).",
+         ["Neutral identities for framed glyphs, so that a symbol is a name and not a picture to be rotated", "Persistent edges for each finite symbol wheel and for the cursor, learned once from observed transitions", "A guard that stops the agent from undoing its own last edit", "A parser for framed words and a direct constraint solver for the editable dictionary", "Composition of chained finite transducers, with checked execution one step at a time"],
+         "Once glyphs are names and each wheel is a known cycle, a level is a small constraint problem: which dictionary entries must change so that the input word maps to the target word. The solver answers that exactly, including when two mappings have to be chained, and the plan is executed with a frame check after every action."),
+])
 
 
 def bars(game, agent, human):
@@ -135,7 +200,7 @@ CITE = """    <h2 id="cite">Cite this page</h2>
 ARC3 = dict(
     hero=dict(img="grotto", accent="#0f7a5a", pos="50% 60%", alt="A hidden grotto with a waterfall falling into a clear green pool, stone steps leading away through ferns and flowers."),
     title="Verified World Models for ARC-AGI-3 | Ritwika Kancharla",
-    description="An open 27B language model paired with a deterministic verification harness completes four public ARC-AGI-3 games without fine-tuning. Method, per-game results, negative results and limitations.",
+    description="An open 27B language model paired with a deterministic verification harness completes six public ARC-AGI-3 games without fine-tuning. Method, per-game results, negative results and limitations.",
     eyebrow="ARC Prize 2026, ongoing",
     h1="Verified World Models for Interactive Reasoning in ARC-AGI-3",
     scripts=("compare.js",),
@@ -143,7 +208,7 @@ ARC3 = dict(
     links=[("Competition", "https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3"),
            ("Hardening sweep (PR #6)", "https://github.com/ritwikareddykancharla/arc-agi3/pull/6")],
     abstract="""<p>ARC-AGI-3 evaluates an agent on small interactive games for which no rules, goals or instructions are provided. This project studies whether an open-weight 27B language model (Qwen3.8-27B), used without any fine-tuning, can solve such games when it is paired with a deterministic software harness. The model proposes hypotheses about the game. The harness owns perception, an immutable record of every transition, replay verification of each proposed rule, bounded search, and guarded execution of plans.</p>
-<p>The system has completed four of the 25 released public games with the maximum local score of 100: <code>ft09</code> (6 of 6 levels, 75 actions), <code>sb26</code> (8 of 8, 124 actions), <code>r11l</code> (6 of 6, 138 actions) and <code>ka59</code> (7 of 7, 300 actions). The final level of <code>ka59</code> used an action prior derived from a public reference trace, which is disclosed below. Six further games have been attempted and are partially solved or unsolved. All results are on public games that were studied during development. They validate the harness design and are not an estimate of leaderboard performance.</p>""",
+<p>The system has completed six of the 25 released public games with the maximum local score of 100: <code>ft09</code> (6 of 6 levels, 75 actions), <code>sb26</code> (8 of 8, 124 actions), <code>r11l</code> (6 of 6, 138 actions), <code>ka59</code> (7 of 7, 300 actions), <code>lp85</code> (8 of 8, 162 actions) and <code>tr87</code> (6 of 6, 189 actions). The final level of <code>ka59</code> used an action prior derived from a public reference trace, which is disclosed below. Seven further games have been attempted and are partially solved or unsolved. All results are on public games that were studied during development. They validate the harness design and are not an estimate of leaderboard performance.</p>""",
     body=f"""
     <figure class="fig"><div class="plate"><div class="frames">
       <div><div class="frame"><img src="{I3}ft09-play.gif" width="256" height="270" alt="Animation of the game ft09 played from the first level to the last. Tiles in a grid change colour one click at a time until each level completes."></div><span class="cap">ft09: 6 of 6 levels, 75 actions</span></div>
@@ -311,23 +376,21 @@ ARC3 = dict(
     {EVIDENCE}
 
     <h2 id="results">Results</h2>
+    <p>Six of the 25 public games are complete with the maximum local score of 100. Each entry below opens to a replay of the actual run, recorded action by action, together with an account of where the model alone got stuck, what the harness supplies for that game family, and why that is sufficient. A replay loads only when its entry is opened.</p>
+    {GAMES}
+    <h3>Games in progress</h3>
     <div class="tablewrap wide"><table>
-      <thead><tr><th>Game</th><th class="r">Levels</th><th class="r">Score</th><th class="r">Actions</th><th>Status and conditions</th></tr></thead>
+      <thead><tr><th>Game</th><th class="r">Levels</th><th class="r">Actions</th><th>Status</th></tr></thead>
       <tbody>
-        <tr class="best"><td><code>ft09</code></td><td class="r">6 / 6</td><td class="r">100</td><td class="r">75</td><td>Single run from empty memory; 26 model calls; no mispredicted action</td></tr>
-        <tr class="best"><td><code>sb26</code></td><td class="r">8 / 8</td><td class="r">100</td><td class="r">124</td><td>Completed across resumed sessions; 90 model calls; 13 mispredicted actions</td></tr>
-        <tr class="best"><td><code>r11l</code></td><td class="r">6 / 6</td><td class="r">100</td><td class="r">138</td><td>145 model calls; every level below its human action baseline; the pickup representation was informed by a public reference trace</td></tr>
-        <tr class="best"><td><code>ka59</code></td><td class="r">7 / 7</td><td class="r">100</td><td class="r">300</td><td>Levels 1 to 6 planned by the simulator; level 7 used a disclosed prior from a public trace</td></tr>
-        <tr><td><code>ar25</code></td><td class="r">1 / 8</td><td class="r"></td><td class="r">42</td><td>Level 1 cleared at action 21; checkpointed</td></tr>
-        <tr><td><code>cn04</code></td><td class="r">1</td><td class="r"></td><td class="r">33</td><td>Level 1 cleared at action 21; in progress</td></tr>
-        <tr><td><code>bp35</code></td><td class="r">0 / 9</td><td class="r"></td><td class="r">20</td><td>Checkpointed; motivated the viewport, lattice-map and equivalence work</td></tr>
-        <tr><td><code>dc22</code></td><td class="r">0</td><td class="r"></td><td class="r">17</td><td>Checkpointed after a context overflow that has since been fixed</td></tr>
-        <tr><td><code>g50t</code></td><td class="r">0</td><td class="r"></td><td class="r"></td><td>In progress</td></tr>
-        <tr><td><code>ls20</code>, <code>cd82</code></td><td class="r">0</td><td class="r"></td><td class="r"></td><td>Unsolved pilot runs</td></tr>
-        <tr><td>14 other games</td><td class="r"></td><td class="r"></td><td class="r"></td><td>Not yet attempted</td></tr>
+        <tr><td><code>ar25</code></td><td class="r">1 / 8</td><td class="r">42</td><td>Level 1 cleared at action 21; checkpointed</td></tr>
+        <tr><td><code>cn04</code></td><td class="r">1</td><td class="r">33</td><td>Level 1 cleared at action 21; in progress</td></tr>
+        <tr><td><code>bp35</code></td><td class="r">0 / 9</td><td class="r">20</td><td>Checkpointed; motivated the viewport, lattice-map and equivalence work</td></tr>
+        <tr><td><code>dc22</code></td><td class="r">0</td><td class="r">17</td><td>Checkpointed after a context overflow that has since been fixed</td></tr>
+        <tr><td><code>g50t</code></td><td class="r">0</td><td class="r"></td><td>In progress</td></tr>
+        <tr><td><code>ls20</code>, <code>cd82</code></td><td class="r">0</td><td class="r"></td><td>Unsolved pilot runs</td></tr>
+        <tr><td>12 other games</td><td class="r"></td><td class="r"></td><td>Not yet attempted</td></tr>
       </tbody>
     </table></div>
-    {CHARTS}
     <div class="note"><b>Interpretation</b><p>A score of 100 is the local scorecard value for one public game. Public development results are not Kaggle leaderboard results, and a completed public game is evidence about the harness and not about hidden games.</p></div>
 
     <h2 id="negative">Negative results</h2>
@@ -344,9 +407,9 @@ ARC3 = dict(
     <ul>
       <li>All results are on public games that were inspected during development. They constitute a development set.</li>
       <li>Several harness components were written after studying a failure on a specific game, and two of them (the token simulator and the pickup representation) were informed by public Schema traces. No game identifier or solution is encoded, but the risk that the harness is fitted to the public mechanics is real and can only be measured on games that were not studied.</li>
-      <li>The <code>sb26</code> and <code>ka59</code> results were obtained across resumed sessions, and level 7 of <code>ka59</code> used a public-trace prior.</li>
+      <li>The <code>sb26</code>, <code>ka59</code> and <code>lp85</code> results were obtained across resumed sessions, and level 7 of <code>ka59</code> used a public-trace prior.</li>
       <li>The model is served on an H200. The competition requires an offline submission, and the model and harness have not yet been packaged for it.</li>
-      <li>Fourteen of the 25 public games have not been attempted.</li>
+      <li>Twelve of the 25 public games have not been attempted.</li>
     </ul>
 
     <h2 id="future">Future work</h2>

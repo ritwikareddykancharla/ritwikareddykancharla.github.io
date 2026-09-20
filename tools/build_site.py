@@ -56,7 +56,7 @@ HOME = f"""
         <div class="pm"><em>2026</em><em class="live">Ongoing</em><em>ARC Prize 2026</em></div>
         <h3><span>Verified World Models for Interactive Reasoning in ARC-AGI-3</span></h3>
         <p>ARC-AGI-3 places an agent in a small game with no instructions. An open 27B model proposes the rules of the game, and a deterministic harness handles perception, records every transition, tests each proposed rule against that record, and executes plans under guard conditions.</p>
-        <div class="result"><b>14 of 14 levels</b> on two public games, without fine-tuning. Development-set result; not a leaderboard score.</div>
+        <div class="result"><b>6 public games complete</b> (41 of 41 levels), without fine-tuning. Development-set result; not a leaderboard score.</div>
       </div>
     </a>
     <a class="feature" href="./projects/arc-agi-2.html">
