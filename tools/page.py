@@ -1,12 +1,13 @@
 """Shared page shell. Every page of the site is written by tools/build_site.py through these two functions."""
 
 import hashlib
+import os
 import re
 from pathlib import Path
 
 FONTS = ("https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500"
          "&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400"
-         "&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap")
+         "&family=Figtree:wght@400;500;600;700;800&display=swap")
 EMAIL = "ritwikareddykancharla@gmail.com"
 GITHUB = "https://github.com/ritwikareddykancharla"
 # the stylesheet keeps its name, so browsers holding an older copy must be told it changed
@@ -24,6 +25,7 @@ SHELL = """<!doctype html>
   <meta name="description" content="@DESC@">
   <meta name="theme-color" content="#f2f5fa">
   <title>@TITLE@</title>
+  <script>try{var t=localStorage.getItem("theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=t}catch(e){}</script>
   <link rel="icon" href="@ROOT@favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,6 +40,7 @@ SHELL = """<!doctype html>
     <a href="@ROOT@about.html"@ON_ABOUT@>About</a>
     <a href="@GITHUB@">GitHub</a>
   </nav>
+  <button class="theme" type="button" aria-label="Switch between light and dark theme"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
   <a class="btn contact" href="mailto:@EMAIL@">Email</a>
 </div></header>
 @BODY@
@@ -46,7 +49,7 @@ SHELL = """<!doctype html>
   <span><a href="mailto:@EMAIL@">Email</a> &nbsp; <a href="@GITHUB@">GitHub</a></span>
 </div></footer>
 <a class="totop" href="#top" aria-label="Back to top"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ring-bg" cx="24" cy="24" r="21"/><circle class="ring" cx="24" cy="24" r="21"/><path d="M24 31V18M18 23.5l6-6 6 6"/></svg></a>
-<script src="@ROOT@assets/site.js?v=@JSV@" defer></script>
+<script src="@ROOT@assets/site.js?v=@JSV@" defer></script>@PREVIEW@
 </body>
 </html>
 """
@@ -57,7 +60,8 @@ def shell(*, root, title, description, body, on_projects=False, on_about=False):
     for key, val in (("@BODY@", body), ("@TITLE@", title), ("@DESC@", description), ("@FONTS@", FONTS),
                      ("@ON_PROJECTS@", ' class="on"' if on_projects else ""),
                      ("@ON_ABOUT@", ' class="on"' if on_about else ""), ("@ROOT@", root),
-                     ("@EMAIL@", EMAIL), ("@GITHUB@", GITHUB), ("@CSSV@", _ver("site.css")), ("@JSV@", _ver("site.js"))):
+                     ("@EMAIL@", EMAIL), ("@GITHUB@", GITHUB), ("@PREVIEW@", '\n<script src="' + root + 'assets/preview.js" defer></script>' if os.environ.get("PREVIEW") else ""),
+                     ("@CSSV@", _ver("site.css")), ("@JSV@", _ver("site.js"))):
         out = out.replace(key, val)
     return out
 

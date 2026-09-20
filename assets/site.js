@@ -7,6 +7,14 @@
   root.classList.add("js");
   const HEADER = 92;
 
+  /* ---------- light / dark ---------- */
+  const themeBtn = document.querySelector(".theme");
+  if (themeBtn) themeBtn.addEventListener("click", () => {
+    const next = root.dataset.theme === "dark" ? "light" : "dark";
+    root.dataset.theme = next;
+    try { localStorage.setItem("theme", next); } catch (e) { /* private window: the choice lasts for this page only */ }
+  });
+
   /* ---------- eased scrolling: duration grows with distance, so long jumps do not whip ---------- */
   let raf = 0;
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
