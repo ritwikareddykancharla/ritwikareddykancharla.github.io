@@ -122,7 +122,7 @@
   if (side) requestAnimationFrame(() => side.classList.add("ready"));
 
   /* ---------- reveal on scroll (checked in the scroll handler, so nothing can stay hidden) ---------- */
-  const sel = ".post-body h2, .tldr, .fig, .tablewrap, .note, blockquote, pre, .hero-img, .feature, .row, .pubs li, .cv article, .reach, .sec-head, .next, .stats a";
+  const sel = ".post-body h2, .tldr, .fig, .ev, .takeaway, .tablewrap, .note, blockquote, pre, .hero-img, .feature, .row, .pubs li, .cv article, .reach, .sec-head, .next, .stats a";
   let waiting = calm ? [] : [...document.querySelectorAll(sel)];
   waiting.forEach((el) => el.classList.add("reveal"));
   function reveal() {

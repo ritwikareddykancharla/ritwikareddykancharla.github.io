@@ -2,6 +2,108 @@
 
 I3 = "../assets/img/arc3/"
 
+
+# ---------------------------------------------------------------------------------------------
+# Presentation devices adapted from the Schema project page [1]: a diagram of the loop, evidence
+# cards that walk through one trace step by step, per-level efficiency bars, a takeaway line under
+# each case study, and a citation block. All numbers come from the hardening ledger (PR #6).
+# ---------------------------------------------------------------------------------------------
+def _box(x, y, n, title, sub, owner):
+    cls = "lp-m" if owner == "model" else "lp-h"
+    who = "model" if owner == "model" else "harness"
+    return (f'<g class="{cls}"><rect x="{x}" y="{y}" width="232" height="76"/>'
+            f'<text class="lp-n" x="{x + 14}" y="{y + 22}">{n:02d}  {who}</text>'
+            f'<text class="lp-t" x="{x + 14}" y="{y + 45}">{title}</text>'
+            f'<text class="lp-s" x="{x + 14}" y="{y + 63}">{sub}</text></g>')
+
+
+LOOP = ('<figure class="fig"><div class="plate"><svg class="loop" viewBox="0 0 860 340" role="img" '
+        'aria-label="The control loop: the harness perceives, the model proposes, the harness replays the proposal on all history, searches, the model commits a plan, and the harness executes and records it.">'
+        '<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="lp-ah"/></marker>'
+        '<marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="lp-ahd"/></marker></defs>'
+        + _box(24, 48, 1, "Perceive", "objects, motion, relations", "harness")
+        + _box(314, 48, 2, "Propose", "what it is, how it moves, the goal", "model")
+        + _box(604, 48, 3, "Replay on all history", "first failing transition reported", "harness")
+        + _box(604, 222, 4, "Search inside the model", "bounded, explicit outcome", "harness")
+        + _box(314, 222, 5, "Commit a plan", "every action carries its prediction", "model")
+        + _box(24, 222, 6, "Execute and record", "halt at the first mismatch", "harness")
+        + '<g class="lp-a"><path d="M256 86H312" marker-end="url(#ah)"/><path d="M546 86H602" marker-end="url(#ah)"/><path d="M720 124V220" marker-end="url(#ah)"/>'
+          '<path d="M604 260H548" marker-end="url(#ah)"/><path d="M314 260H258" marker-end="url(#ah)"/><path d="M140 222V126" marker-end="url(#ah)"/></g>'
+          '<g class="lp-d"><path d="M700 48C700 8 450 8 430 46" marker-end="url(#ahd)"/><path d="M230 222L350 126" marker-end="url(#ahd)"/></g>'
+          '<text class="lp-l" x="566" y="14" text-anchor="middle">replay fails: revise the rule or the representation</text>'
+          '<text class="lp-l" x="300" y="182" text-anchor="start">mismatch: the rest of the plan is void</text>'
+        '</svg></div><figcaption><b>Figure 3.</b> The control loop, after Schema [1] and Retrodict [2]. Outlined steps belong to the language model and filled steps to the deterministic harness. '
+        'Only step 6 spends real game actions. Dashed arrows are the two ways evidence returns to the model.</figcaption></figure>')
+
+
+def evidence(tag, game, title, stat, steps, source):
+    rows = "".join(f'<li class="tl-{role}"><span class="tl-role">{label}</span><div>{text}</div></li>' for role, label, text in steps)
+    return (f'<details class="ev"><summary><span class="ev-tag">Evidence {tag}</span><code>{game}</code>'
+            f'<span class="ev-title">{title}</span><span class="ev-stat">{stat}</span></summary>'
+            f'<ol class="tl">{rows}</ol><p class="ev-src">Source: {source}</p></details>')
+
+
+EVIDENCE = "".join([
+    evidence("A", "bp35", "Reasoning about a fact the harness had already proved", "247 s &rarr; 5.4 s", [
+        ("obs", "Observed", "At step 3 the harness proved that two actions produce the same masked transition from the same state. The model stated this at once, then spent 36,514 reasoning characters and about four minutes deriving it again before choosing another probe."),
+        ("diag", "Diagnosis", "The decision was correct and the cost was latency. The evidence was settled, so a full reasoning turn could add nothing."),
+        ("fix", "Change", "A newly established conditional equivalence now forces the next call to be a short commit turn with reasoning disabled. The turn receives the exact relation and must choose a new low-risk probe. All other diagnostic turns keep the full budget."),
+        ("ok", "Verified", "On a fresh run the forced commit took 5.37 s and 97 tokens with no reasoning tokens. The full suite passed (132 tests)."),
+    ], "PR #6, commit <code>bcf4386</code>, runs <code>bp35-axis-v3</code> and <code>bp35-equivalence-v4</code>"),
+    evidence("B", "ar25", "Two objects moving in opposite directions under one action", "exact motion recovered", [
+        ("obs", "Observed", "The model's notes stated that both pieces move together horizontally, and it executed a long plan from that belief."),
+        ("diag", "Diagnosis", "Exact replay shows one action moving a 45-cell component left by 3 and a 40-cell component right by 3. The colour-delta representation only sees strips entering and leaving when a shape overlaps its old position, so it reported no rigid translation at all."),
+        ("fix", "Change", "The harness now matches normalised connected components across frames and reports a complete translation for every object, including several objects that move differently under one action."),
+        ("ok", "Verified", "Real steps 18, 22 and 32 replay correctly. Level 1 was then cleared at action 21 of a fresh run."),
+    ], "PR #6, commit <code>10833d0</code>"),
+    evidence("C", "r11l", "A collision test that was wrong by one diagonal cell", "6 / 6 in 138 actions", [
+        ("obs", "Observed", "A capture plan placed the system marker at offset (4,4) from a pickup. The game did not collect it (step 131)."),
+        ("diag", "Diagnosis", "Collision had been approximated as a centre distance of at most four cells. The two 21-cell octagons have their corners removed and share no cell at that offset."),
+        ("fix", "Change", "Capture checks compare the rendered cell sets. The observed successful offsets (2,4), (4,1) and (0,0) remain valid and (4,4) is rejected. Signatures accept only the item palette, after a connector line had added a structural colour to one inventory."),
+        ("ok", "Verified", "The next captures succeeded at the predicted centroids, all sparse expectations matched, and the game returned WIN at step 138. The suite passed (156 tests)."),
+    ], "hardening ledger, section on <code>r11l</code>"),
+    evidence("D", "ka59", "More tokens did not substitute for executable state", "614,648 tokens &rarr; 7 / 7", [
+        ("obs", "Observed", "Across 152 calls the model produced 614,648 completion tokens and never cleared level 2. At step 60 the selected token stayed fixed while another token moved five lattice cells; the model called the selected token &ldquo;blocked&rdquo;."),
+        ("diag", "Diagnosis", "The decisive evidence was already in the trace. The model planned in screen coordinates and never promoted contact launching to a transition rule. The missing capability was executable state and not a larger prose memory."),
+        ("fix", "Change", "A harness-owned state model for this mechanic family: a 3-pixel lattice parser, direct movement, bump launches, shoves, overshoot and countdown launches, transition replay and A* planning, with checked execution of at most 16 actions per batch."),
+        ("ok", "Verified", "The simulator reproduces 417 of 417 reference transitions and 110 of 110 original Qwen transitions. A clean run then won all seven levels in 300 actions. Level 7 used a disclosed prior from a public trace."),
+    ], "hardening ledger, section on <code>ka59</code>; PR #6, commit <code>906bc96</code>"),
+    evidence("E", "dc22", "A checkpoint too large for the context on its own", "170,280 &rarr; 97,912 characters", [
+        ("obs", "Observed", "The run failed at action 17 with an oversized request, although every raw exchange had already been evicted."),
+        ("diag", "Diagnosis", "The remaining checkpoint was 170,280 characters. Exact cell arrays were duplicated in the verified ledger, the recent evidence and the last feedback, and the full structural graph was repeated as well. A second compaction had nothing left to evict."),
+        ("fix", "Change", "Compact checkpoints keep the relational facts a decision needs (counts, bounding boxes, colour transitions, component motions, level changes) and omit the duplicated arrays, which stay available in the immutable artifacts."),
+        ("ok", "Verified", "The same 17-action trace now produces a 97,912-character checkpoint: 96,416 of 131,072 tokens with the full 32,768-token diagnostic reserve. The game resumes with its actions, notes and board state intact."),
+    ], "PR #6, commit <code>e18ce1a</code>"),
+])
+
+
+def bars(game, agent, human):
+    top = max(human)
+    rows = ""
+    for i, (a, h) in enumerate(zip(agent, human), 1):
+        rows += (f'<div class="bar-row"><span class="bar-l">L{i}</span><div class="bar-pair">'
+                 f'<i class="bar-h" style="width:{h / top * 86:.1f}%"><em>{h}</em></i>'
+                 f'<i class="bar-a" style="width:{a / top * 86:.1f}%"><em>{a}</em></i></div></div>')
+    return (f'<div class="bars"><p class="bars-k"><code>{game}</code><span>{sum(agent)} actions against a human baseline of {sum(human)}</span></p>{rows}</div>')
+
+
+CHARTS = ('<figure class="fig"><div class="plate"><div class="bars-grid">'
+          + bars("r11l", [10, 18, 39, 18, 28, 25], [22, 33, 51, 26, 52, 49])
+          + bars("ka59", [11, 38, 33, 39, 20, 46, 113], [28, 109, 51, 51, 33, 132, 326])
+          + '</div><p class="bars-key"><i class="bar-h"></i>human baseline <i class="bar-a"></i>this system</p></div>'
+          '<figcaption><b>Figure 5.</b> Real actions per level against the human baseline, for the two games where per-level counts were recorded. '
+          'Level 7 of <code>ka59</code> used a disclosed action prior from a public trace. Shorter is better.</figcaption></figure>')
+
+CITE = """    <h2 id="cite">Cite this page</h2>
+    <pre><code>@misc{kancharla2026verified,
+  title        = {Verified World Models for Interactive Reasoning in ARC-AGI-3},
+  author       = {Kancharla, Ritwika},
+  year         = {2026},
+  howpublished = {\\url{https://ritwikareddykancharla.github.io/projects/arc-agi-3.html}},
+  note         = {Work in progress}
+}</code></pre>
+"""
+
 ARC3 = dict(
     hero=dict(img="grotto", accent="#0f7a5a", pos="50% 60%", alt="A hidden grotto with a waterfall falling into a clear green pool, stone steps leading away through ferns and flowers."),
     title="Verified World Models for ARC-AGI-3 | Ritwika Kancharla",
@@ -79,6 +181,8 @@ ARC3 = dict(
     <h2 id="system">System design</h2>
     <p>The system separates proposing from checking. The language model proposes what the objects are, what an action does, and what completes a level. A deterministic Python harness, which contains no learned components, owns every operation that can be computed or verified exactly. No game identifier, coordinate, or level-specific answer is ever placed in the prompt or the harness.</p>
 
+    {LOOP}
+
     <h3>Observation and tools</h3>
     <p>Each observation is presented losslessly as 64 rows of hexadecimal characters, one character per cell, with coordinates always given as <code>grid[y][x]</code>. The model can request numeric crops, connected components for every colour, and paginated retrieval of any earlier observation. Numeric colour identifiers are authoritative; rendered images are provided for geometry only, after one run spent more than 10,000 reasoning characters renaming colours it could already read as numbers. The model can also run Python in a compute tool and store reusable helper functions.</p>
 
@@ -92,7 +196,7 @@ ARC3 = dict(
     <p>A bounded breadth-first search runs inside the verified model and reports one of five explicit outcomes: found, exhausted, depth limit, budget limit or error. Exploratory probes are single actions. A plan may contain at most 32 actions and carries either sparse expected cells and level changes or full model predictions. The harness executes one action at a time and halts at the first mismatch, level boundary or terminal state. An inaccurate model does not prevent a probe, because probes are how the model is corrected.</p>
 
     <figure class="fig text"><div class="plate"><div class="frame"><img src="{I3}sb26-probe-1.png" width="656" height="320" alt="Two frames side by side. On the left a circle marks a token in the bottom row being clicked. On the right the same token has a white ring around it."></div></div>
-    <figcaption><b>Figure 3.</b> A probe action, before and after. The circle marks the click; the box on the right marks the 20 cells that changed. The model's stated purpose was: &ldquo;click bottom solid piece to learn interaction model (select vs move). Expect it to be removed from source if it moves.&rdquo; The token was not removed and gained a ring, which establishes that a click selects.</figcaption></figure>
+    <figcaption><b>Figure 4.</b> A probe action, before and after. The circle marks the click; the box on the right marks the 20 cells that changed. The model's stated purpose was: &ldquo;click bottom solid piece to learn interaction model (select vs move). Expect it to be removed from source if it moves.&rdquo; The token was not removed and gained a ring, which establishes that a click selects.</figcaption></figure>
 
     <h3>Structural relations computed by the harness</h3>
     <p>Most of the engineering effort went into relations that the harness computes exactly from recorded transitions and reports to the model as hypotheses. Each was added after a specific failure in a live trace and was validated by replaying that trace.</p>
@@ -155,17 +259,25 @@ ARC3 = dict(
     <p>Without assistance the model treated each panel of tiles as a separate puzzle. The missing element was a relation between regions that are far apart on screen: the small patterned tile inside a panel is a miniature of that panel's target state. Clicking a tile toggles its colour, and the level completes when every panel matches its miniature. The harness was not changed to state this rule. It was changed to report panels in pairs, to express tile coordinates in panel space, and to list reflections and colour permutations between regions as candidate relations. After this change the model's plans took the following form.</p>
     <blockquote><p>Toggle BR tile (36,52) from blue to red to match micro swatch 0 at row2,col0. This is the last mismatch; expect level completion.</p><cite>Qwen3.8-27B, third action of the completed ft09 run</cite></blockquote>
     <p>The run completed all six levels in 75 actions and 26 model calls, in about eleven minutes. No action produced a result that the model had not predicted.</p>
+    <p class="takeaway"><b>Observed pattern.</b> The model did not need to be told the rule. It needed the two regions presented side by side in the same coordinates, after which it found the relation itself.</p>
 
     <h3>sb26: references between containers</h3>
     <p>The top row gives the order in which tokens must appear. The boxes in the middle contain slots. From level 2 onward, some slots contain a hollow token in the colour of another box, which means that reading continues inside that box. A depth-first reading of the boxes yields one sequence, and the level completes when that sequence equals the top row. A flat list of connected regions cannot express this structure, so the harness constructs the container and reference graph, in 12 to 15 ms per frame, without interpreting its edges. Given the graph, the model proposed the depth-first reading, the harness verified it against every completed level, and a finite recursive assignment solver produced the remaining placements. The run used 124 actions and 90 model calls over 44 minutes across resumed sessions. Thirteen actions produced an outcome the model had not predicted, and in each case the harness halted the plan.</p>
+    <p class="takeaway"><b>Observed pattern.</b> When the structure of a game is a graph, a list of objects is the wrong data structure, and no amount of reasoning over the list recovers it.</p>
 
     <h3>r11l: docking the centroid of a graph</h3>
     <p>Clicking a diamond-shaped node transfers a selection, and clicking free ground moves the selected node. Each system of connected nodes has a marker at the floor mean of its members' centres, and a level completes when every marker rests on the ring with the matching colour signature. The model initially treated the markers as decoration. After four levels the game changes its representation: the system markers begin black, and separate half-coloured octagons must be collected by passing the marker over them before docking.</p>
     <p>Two exact-geometry errors were found through live mismatches. Collision had been approximated by a centre distance of at most four cells, which accepted the diagonal offset (4,4); the two 21-cell octagons have their corners removed and share no cell at that offset, and the game confirmed that nothing was collected. Collision is now computed from the rendered cell sets. Separately, a connector line crossing a marker added a structural colour to its signature, so signatures now accept only the item palette. The run completed all six levels in 138 actions and 145 model calls, with per-level counts of 10, 18, 39, 18, 28 and 25 actions against human baselines of 22, 33, 51, 26, 52 and 49.</p>
+    <p class="takeaway"><b>Observed pattern.</b> Both errors were in geometry that the harness computed and not in the model's reasoning. Guarded execution exposed each one with a single wasted action.</p>
 
     <h3>ka59: when the missing capability is executable state</h3>
     <p>In the first attempt the model made 152 calls and produced 614,648 completion tokens without clearing level 2. The decisive evidence was present in its own trace: at step 60 the selected token stayed fixed while a second token moved five lattice cells. The model described the selected token as &ldquo;blocked&rdquo;, continued to plan in screen coordinates, and never turned contact launching into a transition rule. The harness now owns a state model for this family of mechanics: it parses tokens on a 3-pixel lattice, models direct movement, bump launches, shoves, overshoot and countdown launches, replays recorded transitions, and plans with A*. It reproduces 417 of 417 transitions of a public reference trace and 110 of 110 transitions of the original Qwen trace.</p>
     <p>A clean run with this controller completed all seven levels in 300 actions with no resets, using 11, 38, 33, 39, 20, 46 and 113 actions against human baselines of 28, 109, 51, 51, 33, 132 and 326. Levels 1 to 6 were planned by the simulator. On level 7 the generic A* search exceeded one million states, so the run used a 113-action prior that was pruned from a 117-action public Schema trajectory and verified from the actual entry state. This level is therefore a result about the integrated system on public data and is not evidence of generalisation to hidden games.</p>
+    <p class="takeaway"><b>Observed pattern.</b> A 27B model can describe a mechanic in prose and still be unable to plan with it. Turning the description into executable state is what made planning possible.</p>
+
+    <h2 id="evidence">Evidence from the traces</h2>
+    <p>Each card below follows one failure from the live trace to the verified change, in four steps: what was observed, what caused it, what was changed in the harness, and how the change was checked. The format follows the evidence cards of the Schema write-up <a href="#ref-1">[1]</a>.</p>
+    {EVIDENCE}
 
     <h2 id="results">Results</h2>
     <div class="tablewrap wide"><table>
@@ -184,6 +296,7 @@ ARC3 = dict(
         <tr><td>14 other games</td><td class="r"></td><td class="r"></td><td class="r"></td><td>Not yet attempted</td></tr>
       </tbody>
     </table></div>
+    {CHARTS}
     <div class="note"><b>Interpretation</b><p>A score of 100 is the local scorecard value for one public game. Public development results are not Kaggle leaderboard results, and a completed public game is evidence about the harness and not about hidden games.</p></div>
 
     <h2 id="negative">Negative results</h2>
@@ -214,6 +327,7 @@ ARC3 = dict(
       <li>Train on intermediate decisions (object roles, discriminating probes, repair location, stopping) and not only on final action sequences.</li>
     </ul>
 
+{CITE}
     <h2 id="references">References</h2>
     <ol class="refs">
       <li id="ref-1">G. Zeng, J. Wang, W. Ma, S. Yin, C. Wang, S. Liu, A. Kanazawa, W. Ni, X. Li, A. Zanette and H. Feng. <em>Schema</em>. Project page, 2026. <a href="https://schema-harness.github.io/">schema-harness.github.io</a>. Trajectories and scorer: <a href="https://huggingface.co/datasets/schema-harness/arc-agi-3-schema-traces">schema-harness/arc-agi-3-schema-traces</a>.</li>
