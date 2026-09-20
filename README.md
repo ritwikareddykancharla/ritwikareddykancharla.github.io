@@ -1,23 +1,38 @@
 # ritwikareddykancharla.github.io
 
-Personal research portfolio for [Ritwika Kancharla](https://ritwikareddykancharla.github.io/).
+Portfolio site of [Ritwika Kancharla](https://ritwikareddykancharla.github.io/): project pages on
+ARC Prize 2026, a 30-minute LM training competition, a long-horizon game agent, CUDA kernels, and
+earlier research on neural methods for vehicle routing.
 
-The current page covers five active 2026 workstreams:
+Static HTML, one stylesheet, no JavaScript. GitHub Pages publishes `main` from the repo root.
 
-- ARC-AGI-3 interactive world-model and verification harness
-- ARC-AGI-2 verified program induction
-- AWS Trainium Frontier model and NKI kernel co-design
-- Kaggriculture imitation learning and self-play agents
-- Blackwell CUDA kernel optimization
+```
+index.html               generated: intro, projects, publications, background
+projects/*.html          generated: one page per project
+assets/site.css          the theme (light, cobalt on cool paper)
+assets/img/arc2, arc3    figures, generated from real run data
+tools/page.py            page shell and the project-page template
+tools/pages_arc.py       text of the two ARC pages
+tools/pages_other.py     text of the other four project pages
+tools/build_site.py      home page text; writes every HTML file
+```
 
-It also preserves the earlier routing and neural-optimization research portfolio,
-including the Routing Foundation Model monograph, MILP-Transformer and
-state-space neural combinatorial optimization manuscripts, and the
-Diffusion–Mamba routing preprint series.
+## Rebuilding
 
-It is a dependency-free academic-style static site. `index.html` is the research
-index, `projects/` contains long-form method and experiment reports, and
-`assets/site.css` provides the shared responsive layout. The site requires no
-JavaScript and is tested at desktop and mobile widths.
+```bash
+python3 tools/build_site.py                                # all HTML pages
 
-GitHub Pages publishes `main` from the repository root.
+PY=~/projects/arc-agi2/.venv/bin/python                    # has numpy + Pillow
+$PY tools/build_arc3_figures.py ~/projects/arc-agi3/runs   # gameplay GIFs, level strips, probes
+$PY tools/build_arc2_figures.py ~/projects/arc-agi2        # puzzle grids, wrong cells outlined
+```
+
+The figure scripts only read the other repos. `build_arc2_figures.py` re-runs saved model programs
+through the arc-agi2 sandbox and writes `assets/img/arc2/figures.json` with image sizes and the
+numbers quoted on the page.
+
+## Writing rules for the project pages
+
+Academic register: abstract, problem statement, approach, results, limitations. Every number is
+reported with its evaluation setting, figures sit next to the claim they support, and negative
+results are reported.

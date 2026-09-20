@@ -1,0 +1,66 @@
+{
+ "ft09": {
+  "play": {
+   "file": "ft09-play.gif",
+   "frames": 76,
+   "actions": 75,
+   "levels": 6,
+   "kb": 45
+  },
+  "levels": {
+   "file": "ft09-levels.png",
+   "levels_shown": 6,
+   "kb": 3
+  },
+  "probe": {
+   "file": "ft09-probe-1.png",
+   "action": {
+    "action": "ACTION6",
+    "x": 38,
+    "y": 38,
+    "expect": [
+     [
+      38,
+      38,
+      8
+     ]
+    ],
+    "expect_level_delta": null
+   },
+   "changed_cells": 38,
+   "reason": "Probe: click BR frame top-left blue tile (currently 9) to test whether ACTION6 toggles tile color, which the BR micro-pattern (red 0s) says it should become."
+  }
+ },
+ "sb26": {
+  "play": {
+   "file": "sb26-play.gif",
+   "frames": 125,
+   "actions": 124,
+   "levels": 8,
+   "kb": 66
+  },
+  "levels": {
+   "file": "sb26-levels.png",
+   "levels_shown": 8,
+   "kb": 3
+  },
+  "probe": {
+   "file": "sb26-probe-1.png",
+   "action": {
+    "action": "ACTION6",
+    "x": 35,
+    "y": 58,
+    "expect": [
+     [
+      35,
+      58,
+      4
+     ]
+    ],
+    "expect_level_delta": null
+   },
+   "changed_cells": 20,
+   "reason": "Probe: click bottom solid piece (color 9) to learn interaction model (select vs move). Expect it to be removed from source if it moves."
+  }
+ }
+}

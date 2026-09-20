@@ -1,29 +1,38 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Ritwika Kancharla. Research and engineering in reasoning agents (ARC Prize 2026), language-model training under fixed compute, CUDA kernel optimization, and neural methods for vehicle routing.">
-  <meta name="theme-color" content="#f2f5fa">
-  <title>Ritwika Kancharla | Machine Learning Research</title>
-  <link rel="icon" href="./favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/site.css">
-</head>
-<body>
-<header class="site"><div class="bar">
-  <a class="brand" href="./index.html"><span class="mark">RK</span><span class="name">Ritwika Kancharla</span></a>
-  <nav aria-label="Site">
-    <a href="./index.html#projects">Projects</a>
-    <a href="./index.html#publications">Publications</a>
-    <a href="./index.html#background">Background</a>
-    <a href="https://github.com/ritwikareddykancharla">GitHub</a>
-  </nav>
-  <a class="btn contact" href="mailto:ritwikareddykancharla@gmail.com">Email</a>
-</div></header>
+#!/usr/bin/env python
+"""Write every page of the site: index.html and projects/*.html.   python3 tools/build_site.py"""
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
+from page import EMAIL, GITHUB, project, shell
+from pages_arc import ARC2, ARC3
+from pages_other import CUDA, KAGG, ROUTING, TRAINIUM
+
+ROOT = Path(__file__).resolve().parent.parent
+
+PAGES = [("arc-agi-3", "ARC-AGI-3", ARC3), ("arc-agi-2", "ARC-AGI-2", ARC2),
+         ("trainium-of-thought", "Trainium", TRAINIUM), ("kaggriculture", "Kaggriculture", KAGG),
+         ("cuda-optimization", "CUDA kernels", CUDA), ("routing-foundation-model", "Routing", ROUTING)]
+
+for i, (slug, _, spec) in enumerate(PAGES):
+    prev = (PAGES[i - 1][1], f"{PAGES[i - 1][0]}.html") if i else None
+    nxt = (PAGES[i + 1][1], f"{PAGES[i + 1][0]}.html") if i + 1 < len(PAGES) else None
+    html = project(**spec, prev=prev, nxt=nxt)
+    (ROOT / "projects" / f"{slug}.html").write_text(html)
+    print("wrote", slug, len(html))
+
+
+def row(when, status, href, title, text, result, note):
+    live = f'<em class="live">{status}</em>' if status == "Ongoing" else f"<em>{status}</em>"
+    return f"""<article class="row">
+      <div class="pm"><em>{when}</em>{live}</div>
+      <div class="main"><h3><a href="{href}">{title}</a></h3><p>{text}</p></div>
+      <div class="result"><b>{result}</b><br>{note}</div>
+    </article>"""
+
+
+HOME = f"""
 <main>
 <section class="hero"><div class="hero-in">
   <div>
@@ -31,7 +40,7 @@
     <h1>Ritwika Kancharla</h1>
     <p class="lede">I work on reasoning agents, learned optimization and efficient training systems. My current research is on the ARC Prize 2026 benchmarks, where I pair an open 27B language model with software that verifies each of its hypotheses before acting on it.</p>
     <p class="lede">I hold an M.S. in Computer Science from Purdue University and a B.Tech in Computer Science from IIT Madras. Previously I was a Software Development Engineer in Amazon's Supply Chain Optimization Technologies group.</p>
-    <div class="actions"><a class="btn primary" href="#projects">View projects</a><a class="btn" href="#publications">Publications</a><a class="btn" href="https://github.com/ritwikareddykancharla">GitHub</a></div>
+    <div class="actions"><a class="btn primary" href="#projects">View projects</a><a class="btn" href="#publications">Publications</a><a class="btn" href="{GITHUB}">GitHub</a></div>
   </div>
   <aside class="now" aria-label="Current work">
     <p class="now-k">Current work</p>
@@ -68,26 +77,18 @@
   </div>
 
   <div class="rows">
-    <article class="row">
-      <div class="pm"><em>2026</em><em>Completed</em></div>
-      <div class="main"><h3><a href="./projects/trainium-of-thought.html">Model and Kernel Co-Design under a 30-Minute Training Budget</a></h3><p>A language-model training competition on AWS Trainium2 in which wall-clock time is the only budget. The architecture and the fused kernels were developed together so that more useful optimizer steps fit into 30 minutes.</p></div>
-      <div class="result"><b>1.3951 to 0.9656 val bpb</b><br>First place on the public leaderboard at its peak.</div>
-    </article>
-    <article class="row">
-      <div class="pm"><em>2026</em><em class="live">Ongoing</em></div>
-      <div class="main"><h3><a href="./projects/kaggriculture.html">Imitation Learning for a Long-Horizon Economic Game</a></h3><p>Recurrent behaviour cloning on a 719-decision farming economy. A strict evaluation audit showed that the first results were inflated by games in which the agent had failed, and it identified the cause.</p></div>
-      <div class="result"><b>100,660 expert decisions</b><br>140 complete games with seed-disjoint splits.</div>
-    </article>
-    <article class="row">
-      <div class="pm"><em>2026</em><em class="live">Ongoing</em></div>
-      <div class="main"><h3><a href="./projects/cuda-optimization.html">A Verification-First Workflow for CUDA Kernel Optimization on Blackwell</a></h3><p>Contract work on the NVIDIA RTX PRO 6000. A kernel is accepted only if it is numerically correct, free of memory errors and at least 1.2&times; faster than PyTorch on every workload variant.</p></div>
-      <div class="result"><b>sm_120, 16 workload variants</b><br>Two task tracks completed.</div>
-    </article>
-    <article class="row">
-      <div class="pm"><em>2025 to 2026</em><em>Proposal</em></div>
-      <div class="main"><h3><a href="./projects/routing-foundation-model.html">Routing Foundation Models: Learned Warm Starts for Vehicle-Routing Solvers</a></h3><p>A hybrid design in which a learned model supplies an exact solver with diverse starting solutions, using a MILP-structured encoder, diffusion-based generation, state-space decoding and feasibility repair.</p></div>
-      <div class="result"><b>83-page monograph</b><br>Three manuscripts and prototype code. Not yet benchmarked.</div>
-    </article>
+    {row("2026", "Completed", "./projects/trainium-of-thought.html", "Model and Kernel Co-Design under a 30-Minute Training Budget",
+         "A language-model training competition on AWS Trainium2 in which wall-clock time is the only budget. The architecture and the fused kernels were developed together so that more useful optimizer steps fit into 30 minutes.",
+         "1.3951 to 0.9656 val bpb", "First place on the public leaderboard at its peak.")}
+    {row("2026", "Ongoing", "./projects/kaggriculture.html", "Imitation Learning for a Long-Horizon Economic Game",
+         "Recurrent behaviour cloning on a 719-decision farming economy. A strict evaluation audit showed that the first results were inflated by games in which the agent had failed, and it identified the cause.",
+         "100,660 expert decisions", "140 complete games with seed-disjoint splits.")}
+    {row("2026", "Ongoing", "./projects/cuda-optimization.html", "A Verification-First Workflow for CUDA Kernel Optimization on Blackwell",
+         "Contract work on the NVIDIA RTX PRO 6000. A kernel is accepted only if it is numerically correct, free of memory errors and at least 1.2&times; faster than PyTorch on every workload variant.",
+         "sm_120, 16 workload variants", "Two task tracks completed.")}
+    {row("2025 to 2026", "Proposal", "./projects/routing-foundation-model.html", "Routing Foundation Models: Learned Warm Starts for Vehicle-Routing Solvers",
+         "A hybrid design in which a learned model supplies an exact solver with diverse starting solutions, using a MILP-structured encoder, diffusion-based generation, state-space decoding and feasibility repair.",
+         "83-page monograph", "Three manuscripts and prototype code. Not yet benchmarked.")}
   </div>
 </div></section>
 
@@ -118,10 +119,10 @@
   </div>
 </div></section>
 </main>
+"""
 
-<footer class="site-foot"><div class="wrap">
-  <span>Ritwika Kancharla, 2026</span>
-  <span><a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a> &nbsp; <a href="https://github.com/ritwikareddykancharla">GitHub</a></span>
-</div></footer>
-</body>
-</html>
+index = shell(root="./", title="Ritwika Kancharla | Machine Learning Research",
+              description="Ritwika Kancharla. Research and engineering in reasoning agents (ARC Prize 2026), language-model training under fixed compute, CUDA kernel optimization, and neural methods for vehicle routing.",
+              body=HOME)
+(ROOT / "index.html").write_text(index)
+print("wrote index", len(index))

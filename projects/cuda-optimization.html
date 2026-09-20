@@ -1,13 +1,96 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Evidence-driven CUDA optimization on Blackwell — project report by Ritwika Kancharla."><title>CUDA Optimization on Blackwell — Ritwika Kancharla</title>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Evidence-driven CUDA optimization on Blackwell — project report by Ritwika Kancharla."><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="../assets/site.css"></head>
-<body><header class="site-header"><nav class="wrap"><a class="site-name" href="../index.html">Ritwika Kancharla</a><div class="nav-links"><a href="../index.html#projects">Projects</a><a href="../index.html#publications">Publications</a><a href="https://github.com/ritwikareddykancharla">GitHub ↗</a></div></nav></header>
-<main><header class="article-header"><div class="wrap"><p class="eyebrow">Engineering report · CUDA · 2026</p><h1>Evidence-driven CUDA optimization on Blackwell</h1><p class="dek">A reproducible workflow for converting correctness traces and Nsight profiles into sanitizer-clean kernels that beat framework references across every target workload.</p><div class="meta"><span>Ritwika Kancharla</span><span>RTX PRO 6000 Blackwell</span><span>CUDA 12.9</span><span>Nsight Compute</span><span>Compute Sanitizer</span><span class="tag">client work</span></div><div class="article-actions"><a class="button" href="https://www.mercor.com/">Mercor ↗</a></div></div></header>
-<div class="wrap article-layout"><aside class="toc"><h2>Contents</h2><ol><li><a href="#abstract">Abstract</a></li><li><a href="#contract">1. Optimization contract</a></li><li><a href="#workflow">2. Workflow</a></li><li><a href="#correctness">3. Correctness</a></li><li><a href="#performance">4. Performance</a></li><li><a href="#evidence">5. Evidence</a></li><li><a href="#lessons">6. Lessons</a></li></ol></aside>
-<article class="article-body"><div class="abstract" id="abstract"><h2>Abstract</h2><p>This work optimizes CUDA implementations for fixed deep-learning workloads on NVIDIA’s <code>sm_120</code> architecture. Success is conjunctive: every variant must be numerically correct, memory-safe, and at least 1.2× faster than the PyTorch reference. The workflow combines differential localization, per-kernel profiling, one-turn optimization experiments, automatic rollback of regressions, and complete provenance. Two task tracks were completed under this process; one active cross-attention backward task spans 16 workload variants.</p></div>
-<h2 id="contract">1. Optimization contract</h2><p>A fast median is insufficient. Each workload independently gates promotion:</p><ul><li>the CUDA extension compiles for <code>sm_120</code>;</li><li>all output and gradient tensors pass the numerical checker;</li><li>Compute Sanitizer reports no memory errors;</li><li>CUDA is at least 1.2× faster than the framework reference on every target shape;</li><li>the final artifact includes source, benchmark JSON, report, and an auditable iteration record.</li></ul><p>This contract changes the search. A technique that wins on 15 shapes and regresses one cannot ship. A kernel that appears fast because it silently computes the wrong gradient is recorded as a failed experiment.</p>
-<h2 id="workflow">2. Profile, change, replay</h2><figure class="method-figure"><div class="pipeline"><div class="pipeline-step">Baseline<br>all shapes</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Localize<br>first wrong tensor</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Profile<br>time + stalls</div><div class="pipeline-arrow">→</div><div class="pipeline-step">One change<br>record rationale</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Full replay<br>16 / 16 gate</div></div><figcaption>Failed turns retain their report and source snapshot, then the working solution is restored before the next hypothesis.</figcaption></figure><p>Each iteration records the exact source difference, profiler observation, sanitizer result, next hypothesis, and whether the attempt failed. When iteration two or later regresses, the code is rolled back but the negative result remains in the trajectory. This keeps the optimization path reproducible and prevents the same idea from being retried without new evidence.</p>
-<h2 id="correctness">3. Localizing correctness before tuning speed</h2><p>Backward kernels can produce many apparently related failures from one early error. The useful question is not “which final weights are wrong?” but “what is the first intermediate tensor that diverges?” For the cross-attention workload, attention probabilities, context gradients, value gradients, and output projections were clean in one diagnostic lineage; corruption first appeared in attention-score gradients and propagated into query/key paths and downstream weights.</p><p>That boundary sharply narrows the search to masking, scale, layout, reduction, and transpose logic around <code>grad_attention_scores</code>. Compute Sanitizer then distinguishes numerical mistakes from out-of-bounds access or races. Correctness checks run across all shapes because a launch geometry valid for the common <code>n_text=77</code> case may fail elsewhere.</p>
-<h2 id="performance">4. Blackwell-specific performance work</h2><p>Nsight Compute is used to determine whether a candidate is limited by tensor cores, memory traffic, occupancy, launch overhead, or dependency chains. Common interventions include:</p><ul><li>fusing adjacent pointwise operations into producer or consumer epilogues;</li><li>tiling reductions to keep reused values in registers or shared memory;</li><li>specializing common sequence dimensions while retaining a correct general path;</li><li>reducing global-memory round trips for transposes and gradient accumulation;</li><li>using library GEMMs through compliant dynamic loading where hand-written matmul is not competitive;</li><li>batching small work to amortize launches without increasing synchronization cost.</li></ul><p>Performance is always measured end to end. A microkernel can look excellent while integration adds layout conversions or temporary buffers that erase the gain.</p>
-<h2 id="evidence">5. What is preserved</h2><div class="table-wrap"><table><thead><tr><th>Artifact</th><th>Purpose</th></tr></thead><tbody><tr><td>Iteration note</td><td>Human-readable change, profile finding, sanitizer result, and failure decision.</td></tr><tr><td>Source snapshot</td><td>Exact kernel corresponding to each measurement, including failed variants.</td></tr><tr><td>Benchmark JSON</td><td>Machine-readable correctness and timing for every workload.</td></tr><tr><td>Final report</td><td>Per-shape speedups, numerical status, and build details.</td></tr><tr><td>Trajectory export</td><td>Complete provenance for the optimization process, kept separate from source review.</td></tr></tbody></table></div><p>Sensitive client code and raw trajectories are not published on this site. The page documents the research method and evaluation contract.</p>
-<h2 id="lessons">6. Lessons</h2><ol><li>Localize the first incorrect intermediate before touching performance.</li><li>Read profiler evidence as a causal claim to test, not a list of utilization percentages.</li><li>Keep the common shape fast without violating uncommon-shape correctness.</li><li>Rollback code, retain evidence.</li><li>Ship only after the full workload matrix passes; spot checks create misleading confidence.</li></ol><div class="callout"><strong>Central finding.</strong> Kernel optimization becomes much more reliable when every change is treated like a falsifiable experiment with a saved artifact, a specific bottleneck claim, and an all-shape replay.</div>
-</article></div></main><footer class="site-footer"><div class="wrap footer-row"><span><a href="../index.html">← Research index</a></span><span>Project details limited to publishable methodology</span></div></footer></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Contract CUDA work on the NVIDIA RTX PRO 6000 Blackwell: a kernel is accepted only if it is numerically correct, memory-safe and at least 1.2x faster than PyTorch on every workload.">
+  <meta name="theme-color" content="#f2f5fa">
+  <title>A Verification-First Workflow for CUDA Kernel Optimization on Blackwell | Ritwika Kancharla</title>
+  <link rel="icon" href="../favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="site"><div class="bar">
+  <a class="brand" href="../index.html"><span class="mark">RK</span><span class="name">Ritwika Kancharla</span></a>
+  <nav aria-label="Site">
+    <a href="../index.html#projects" class="on">Projects</a>
+    <a href="../index.html#publications">Publications</a>
+    <a href="../index.html#background">Background</a>
+    <a href="https://github.com/ritwikareddykancharla">GitHub</a>
+  </nav>
+  <a class="btn contact" href="mailto:ritwikareddykancharla@gmail.com">Email</a>
+</div></header>
+
+<main><article class="demo"><div class="wrap">
+  <a class="crumb" href="../index.html#projects">&larr; All projects</a>
+  <header class="post-head">
+    <p class="eyebrow">Contract work, 2026</p>
+    <h1 class="post-title">A Verification-First Workflow for CUDA Kernel Optimization on Blackwell</h1>
+    <p class="meta"><span>Ritwika Kancharla</span><span>2026</span><span>Client work through Mercor</span></p>
+    <div class="toc"><a class="chip" href="#problem">1. Problem statement</a><a class="chip" href="#method">2. Method</a><a class="chip" href="#correctness">3. Establishing correctness</a><a class="chip" href="#performance">4. Performance techniques</a><a class="chip" href="#artifacts">5. Recorded artifacts</a><a class="chip" href="#conclusions">6. Conclusions</a></div>
+  </header>
+  <div class="post-body">
+    <div class="tldr"><p class="tk">Abstract</p><p>This page describes the method I use for contract work writing CUDA kernels for the NVIDIA RTX PRO 6000 Blackwell (<code>sm_120</code>). Each task is a fixed deep-learning workload with a PyTorch reference implementation. A kernel is accepted only if it compiles for the target architecture, passes a numerical check on every output and gradient tensor, produces no Compute Sanitizer errors, and is at least 1.2&times; faster than the reference on every workload variant.</p>
+<p>The client's source code is confidential, so the page covers the workflow and not the kernels. Two task tracks have been completed under these criteria. The current task is the backward pass of a cross-attention layer with 16 workload variants.</p></div>
+
+    <h2 id="problem"><span class="num">01</span>Problem statement</h2>
+    <p>The acceptance criterion applies to every workload variant and not to their average. An optimisation that is faster on fifteen input shapes and slower on the sixteenth cannot be delivered. A kernel that is fast because it computes an incorrect gradient is a failed experiment and is recorded as one. This requirement determines the order of work: correctness is established on all shapes before any performance work begins, and every performance change is evaluated on the complete set.</p>
+
+    <h2 id="method"><span class="num">02</span>Method</h2>
+    <ol>
+      <li>Measure the baseline on all shapes.</li>
+      <li>If any output is incorrect, identify the first incorrect intermediate tensor.</li>
+      <li>Profile the kernel and classify the bottleneck: compute, memory traffic, occupancy, launch overhead or synchronisation.</li>
+      <li>Make one change and record the expected effect before measuring.</li>
+      <li>Run the full workload set again. All 16 variants must pass.</li>
+    </ol>
+    <p>If a change causes a regression, the code is reverted and the note, the source snapshot and the measurements are kept. This record prevents the same idea from being attempted again without new evidence.</p>
+
+    <h2 id="correctness"><span class="num">03</span>Establishing correctness</h2>
+    <p>A backward pass can show many failing outputs that originate from one early error. The useful question is which intermediate tensor is the first to diverge. In the cross-attention task, the attention probabilities, context gradients, value gradients and output projections were all correct. The error began at the gradient of the attention scores and propagated from there into the query and key paths. This restricted the search to masking, scaling, memory layout, reductions and transposes around a single tensor.</p>
+    <p>Compute Sanitizer then separates arithmetic errors from out-of-bounds accesses and data races. Correctness is tested on all shapes, because a launch geometry that is valid for the common sequence length of 77 can be invalid for another.</p>
+
+    <h2 id="performance"><span class="num">04</span>Performance techniques</h2>
+    <p>Once the profile identifies where time is spent, the following techniques were the most effective on Blackwell.</p>
+    <ul>
+      <li>Fusing adjacent pointwise operations into the preceding or following kernel.</li>
+      <li>Tiling reductions so that reused values remain in registers or shared memory.</li>
+      <li>A specialised path for the common sequence length, with a correct general path as the fallback.</li>
+      <li>Fewer transfers to global memory for transposes and gradient accumulation.</li>
+      <li>Calling the vendor GEMM where a hand-written matrix multiplication cannot compete.</li>
+      <li>Batching small units of work so that launch cost is paid once.</li>
+    </ul>
+    <p>Speed is always measured end to end. A kernel that performs well in isolation can lose its advantage to a layout conversion or a temporary buffer after integration.</p>
+
+    <h2 id="artifacts"><span class="num">05</span>Recorded artifacts</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Artifact</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Iteration note</td><td>The change, the profile observation, the sanitizer result, and whether the change failed</td></tr>
+        <tr><td>Source snapshot</td><td>The exact kernel behind each measurement, including rejected versions</td></tr>
+        <tr><td>Benchmark JSON</td><td>Correctness and timing for every workload in machine-readable form</td></tr>
+        <tr><td>Final report</td><td>Speedup per shape, numerical status and build details</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="conclusions"><span class="num">06</span>Conclusions</h2>
+    <ul>
+      <li>Locate the first incorrect intermediate before any performance work.</li>
+      <li>A profiler reading is a hypothesis about cause and should be tested by an experiment.</li>
+      <li>Optimise the common shape without breaking the uncommon ones.</li>
+      <li>Revert the code and keep the evidence.</li>
+      <li>Spot checks give false confidence. Only the complete workload matrix is conclusive.</li>
+    </ul>
+
+  </div>
+  <div class="next"><a class="btn" href="kaggriculture.html">Previous: Kaggriculture</a><a class="btn primary" href="routing-foundation-model.html">Next: Routing</a></div>
+</div></article></main>
+<footer class="site-foot"><div class="wrap">
+  <span>Ritwika Kancharla, 2026</span>
+  <span><a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a> &nbsp; <a href="https://github.com/ritwikareddykancharla">GitHub</a></span>
+</div></footer>
+</body>
+</html>

@@ -1,17 +1,112 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Trainium of Thought — model and kernel co-design on AWS Trainium2."><title>Trainium of Thought — Ritwika Kancharla</title>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Trainium of Thought — model and kernel co-design on AWS Trainium2."><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="../assets/site.css"></head>
-<body><header class="site-header"><nav class="wrap"><a class="site-name" href="../index.html">Ritwika Kancharla</a><div class="nav-links"><a href="../index.html#projects">Projects</a><a href="../index.html#publications">Publications</a><a href="https://github.com/ritwikareddykancharla">GitHub ↗</a></div></nav></header>
-<main><header class="article-header"><div class="wrap"><p class="eyebrow">Systems report · AWS Trainium2 · September 2026</p><h1>Trainium of Thought: co-designing a model and its training system</h1><p class="dek">A fixed 30-minute training budget turns architecture, optimization, input pipeline, numerical format, and kernel launch overhead into one coupled objective.</p><div class="meta"><span>Ritwika Kancharla</span><span>AWS Trainium2</span><span>Neuron Kernel Interface</span><span>FP8 + BF16</span><span class="tag">phase 1</span></div><div class="article-actions"><a class="button" href="https://trainium-frontier.devpost.com/">Challenge ↗</a></div></div></header>
-<div class="wrap article-layout"><aside class="toc"><h2>Contents</h2><ol><li><a href="#abstract">Abstract</a></li><li><a href="#objective">1. Objective</a></li><li><a href="#method">2. Method</a></li><li><a href="#system">3. Final stack</a></li><li><a href="#results">4. Results</a></li><li><a href="#failures">5. Negative results</a></li><li><a href="#lessons">6. Lessons</a></li></ol></aside>
-<article class="article-body"><div class="abstract" id="abstract"><h2>Abstract</h2><p>This project optimizes language-model validation bits per byte after exactly 30 minutes of training on Trainium2. The effective objective is not lowest loss per step or maximum tokens per second; it is the best model reachable before the wall clock expires. Starting from a 1.3951 submission, repeated controlled runs produced a 0.9669 local best and a public leaderboard peak at first place. The final recipe combines a wider, shallower model, large device batches, structured optimizer groups, streaming data, FP8 projection paths, fused attention and normalization kernels, and launch-overhead reduction.</p></div>
-<h2 id="objective">1. The wall clock changes the optimization problem</h2><p>Every design choice has two effects: it changes how much the model learns from one update, and it changes how many updates fit into 30 minutes. A feature that improves matched-step loss can still lose because it adds 20 ms to every step. Conversely, removing too much attention increases throughput but damages modeling quality more than the extra updates recover.</p><p>The primary measurement was full-budget validation bpb. Short probes screened catastrophic ideas and profilers localized cost, but promising changes had to survive the full training horizon and the exact scorer path.</p>
-<h2 id="method">2. Experimental method</h2><figure class="method-figure"><div class="pipeline"><div class="pipeline-step">Profile<br>step + kernels</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Change one axis<br>architecture or system</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Short gate<br>loss + throughput</div><div class="pipeline-arrow">→</div><div class="pipeline-step">30-minute run<br>authoritative</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Build artifact<br>scorer parity</div></div><figcaption>Matched-step quality and end-of-budget quality were logged separately; neither substitutes for the final scorer.</figcaption></figure>
-<p>Experiments were recorded in a run ledger with architecture, batch size, optimizer settings, kernel stack, seconds per step, completed updates, and final score. Kernel work used isolated microbenchmarks to understand hardware behavior, followed by a trainer-level test because faster operators can lose after integration through synchronization, staging, or host overhead.</p>
-<h3>Architecture search</h3><p>Shallower, wider configurations were strong because they preserved capacity while reducing serial layer overhead. Attention-layer removal was tested carefully: one skip could be beneficial, while additional removals crossed a quality floor. U-Net-style residual skips cost memory traffic but delivered enough per-step quality to remain in the final design.</p>
-<h3>Optimization and data</h3><p>Large device batches increased accelerator utilization. Muon handled major matrices while AdamW covered embeddings, output heads, and smaller parameters. Streaming data and scorer-shaped rows reduced input mismatch. Warmup and cooldown were tuned against the fixed number of steps rather than conventional epoch counts.</p>
-<h2 id="system">3. Final training stack</h2><ul><li><strong>Model:</strong> approximately 1024-wide, eight-layer language model with selective attention placement and skip connections.</li><li><strong>Parallel execution:</strong> four processes at LNC=2 with a 262k-token effective batch.</li><li><strong>Precision:</strong> BF16 state with FP8 projection paths where numerical error remained acceptable.</li><li><strong>NKI kernels:</strong> fused normalization, RoPE, cross entropy, ReLU², flash attention, embedding scatter, and selected optimizer tails.</li><li><strong>Launch reduction:</strong> batched table preparation and fused residual or epilogue operations where end-to-end profiles supported them.</li></ul>
-<p>The FP8 v12 up-projection path stored scaled weights efficiently and folded column factors into the down projection. A later batching change reduced host launch overhead without changing losses. RoPE fusion supplied a smaller additional gain.</p>
-<h2 id="results">4. Results</h2><div class="table-wrap"><table><thead><tr><th>Checkpoint</th><th>Result</th><th>What changed</th></tr></thead><tbody><tr><td>Starting submission</td><td>1.3951</td><td>Initial reference.</td></tr><tr><td>Submission 5</td><td>0.9848 leaderboard</td><td>Wider/shallow recipe and early fused-kernel stack; reached public #1.</td></tr><tr><td>D62</td><td>0.9679 local</td><td>Embedding scatter and batched Muon tail increased useful steps.</td></tr><tr><td>D70</td><td>0.9669 local</td><td>FP8 v12 projection path; new local best at that checkpoint.</td></tr><tr><td>D72</td><td>0.9656 local</td><td>Batched FP8 tables plus fused RoPE; later local improvement in the run ledger.</td></tr></tbody></table></div><p class="note">The 0.9669 figure is the documented first-place milestone highlighted for the project. Local validation, built-artifact evaluation, and public leaderboard scores are kept separate because packaging and runtime differences produced measurable offsets.</p>
-<h2 id="failures">5. Negative results that shaped the system</h2><h3>Fast in isolation, slow in the trainer</h3><p>A weight-resident BF16 NKI matmul beat eager operators by 6–18% in microbenchmarks but slowed the integrated training step from roughly 0.715 to 0.870 seconds. Synchronization and integration costs dominated the isolated gain.</p><h3>Gates improved learning but lost the wall-clock race</h3><p>Attention and smear gates led matched-step loss yet added enough runtime to finish fewer updates. Even after moving multiplications into kernels, slicing small gate inputs and launching many tiny operations consumed the advantage.</p><h3>More capacity could reduce final quality</h3><p>A 203M-parameter value-embedding model learned faster at matched steps but completed 11% fewer updates and ended worse. A deeper ten-layer model showed the same pattern.</p><h3>Packaging was part of correctness</h3><p>One built candidate was 7% slower because a flash-attention flag was omitted from the builder. Another early artifact passed local development but failed the scorer path through module alias recursion and fallback behavior. Exact artifact verification became mandatory.</p>
-<h2 id="lessons">6. Lessons</h2><ol><li>Optimize end-of-budget quality, not a proxy in isolation.</li><li>Keep per-step learning and step throughput in the same ledger.</li><li>Trust trainer-level profiles over operator microbenchmarks.</li><li>Treat the submission builder as production code with parity tests.</li><li>Preserve negative runs; they close axes and prevent expensive repetition.</li></ol><div class="callout"><strong>Central finding.</strong> The strongest gain came from co-design. Architecture made kernels easier to exploit, kernels changed the feasible architecture, and the fixed clock determined whether either change mattered.</div>
-</article></div></main><footer class="site-footer"><div class="wrap footer-row"><span><a href="../index.html">← Research index</a></span><span>Last updated September 2026</span></div></footer></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AWS Trainium Frontier: validation bits per byte reduced from 1.3951 to 0.9656 within a fixed 30-minute training budget through joint changes to the architecture and the kernels.">
+  <meta name="theme-color" content="#f2f5fa">
+  <title>Model and Kernel Co-Design under a 30-Minute Training Budget | Ritwika Kancharla</title>
+  <link rel="icon" href="../favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="site"><div class="bar">
+  <a class="brand" href="../index.html"><span class="mark">RK</span><span class="name">Ritwika Kancharla</span></a>
+  <nav aria-label="Site">
+    <a href="../index.html#projects" class="on">Projects</a>
+    <a href="../index.html#publications">Publications</a>
+    <a href="../index.html#background">Background</a>
+    <a href="https://github.com/ritwikareddykancharla">GitHub</a>
+  </nav>
+  <a class="btn contact" href="mailto:ritwikareddykancharla@gmail.com">Email</a>
+</div></header>
+
+<main><article class="demo"><div class="wrap">
+  <a class="crumb" href="../index.html#projects">&larr; All projects</a>
+  <header class="post-head">
+    <p class="eyebrow">AWS Trainium Frontier, 2026</p>
+    <h1 class="post-title">Model and Kernel Co-Design under a 30-Minute Training Budget</h1>
+    <p class="meta"><span>Ritwika Kancharla</span><span>September 2026</span><span><a href="https://trainium-frontier.devpost.com/">Challenge</a></span></p>
+    <div class="toc"><a class="chip" href="#problem">1. Problem statement</a><a class="chip" href="#method">2. Experimental protocol</a><a class="chip" href="#config">3. Final configuration</a><a class="chip" href="#results">4. Results</a><a class="chip" href="#negative">5. Negative results</a><a class="chip" href="#conclusions">6. Conclusions</a></div>
+  </header>
+  <div class="post-body">
+    <div class="tldr"><p class="tk">Abstract</p><p>The AWS Trainium Frontier challenge fixes the hardware (AWS Trainium2), the dataset and the wall-clock time. Entries are ranked by the validation bits per byte of the language model that exists when 30 minutes of training have elapsed. Under this rule the number of optimizer steps is not fixed, so each design decision affects both how much the model learns per step and how many steps fit in the budget.</p>
+<p>This project reduced validation bits per byte from 1.3951 to 0.9656 in full-budget local runs. The best submitted model scored 0.9848 and held first place on the public leaderboard at its peak. Most of the improvement came from two changes that depend on each other: a wider and shallower model, and hand-fused kernels that shorten each training step. Several modifications that improved loss at a fixed step count produced a worse final model, and these negative results are reported.</p></div>
+
+    <h2 id="problem"><span class="num">01</span>Problem statement</h2>
+    <p>The usual comparison between training recipes asks which one reaches the lowest loss after a fixed number of steps. Here the fixed quantity is time. A modification that lowers the loss at step 1,000 can still lose if it adds 20 ms to every step, because the run ends before the step at which the modification would have paid off. The objective is therefore the validation loss at the end of a complete 30-minute run, measured through the official scoring path. Short runs were used only to reject clearly unsuccessful ideas.</p>
+
+    <h2 id="method"><span class="num">02</span>Experimental protocol</h2>
+    <ol>
+      <li>Profile one training step and attribute its time to operators.</li>
+      <li>Change one thing, either the architecture or the system, and never both in the same experiment.</li>
+      <li>Run a short gate that checks loss and throughput.</li>
+      <li>If the change passes the gate, run the full 30 minutes. Only this result is recorded as the outcome.</li>
+      <li>Build the submission artifact and confirm that its score matches the local run.</li>
+    </ol>
+    <p>Every run was recorded in a ledger with its architecture, batch size, optimizer settings, kernel set, seconds per step, steps completed and final score. Kernels were first developed as isolated microbenchmarks and were always measured again inside the full trainer, because an operator that is faster in isolation can still increase step time once synchronisation and host overhead are included.</p>
+
+    <h2 id="config"><span class="num">03</span>Final configuration</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Aspect</th><th>Choice</th></tr></thead>
+      <tbody>
+        <tr><td>Model</td><td>Width of about 1024, eight layers, attention in a subset of layers, U-Net-style skip connections</td></tr>
+        <tr><td>Parallelism</td><td>Four processes, 262k tokens per effective batch</td></tr>
+        <tr><td>Optimizers</td><td>Muon for the large matrices; AdamW for embeddings, the output head and small parameters; warmup and cooldown set to the number of steps that fit</td></tr>
+        <tr><td>Precision</td><td>BF16 state; FP8 on the projection paths where the numerical error remained acceptable</td></tr>
+        <tr><td>Fused kernels</td><td>Normalisation, RoPE, cross entropy, ReLU&sup2;, flash attention, embedding scatter and parts of the optimizer step, written against the AWS Neuron Kernel Interface</td></tr>
+        <tr><td>Launch overhead</td><td>Small table preparations batched; residual operations fused where an end-to-end profile showed a benefit</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="results"><span class="num">04</span>Results</h2>
+    <figure class="fig"><div class="plate"><svg viewBox="0 0 860 300" role="img" aria-label="Validation bits per byte at five checkpoints, falling from 1.3951 to 0.9656">
+<g stroke="var(--chart-grid)" stroke-width="1"><line x1="60" y1="40" x2="820" y2="40"/><line x1="60" y1="110" x2="820" y2="110"/><line x1="60" y1="180" x2="820" y2="180"/><line x1="60" y1="250" x2="820" y2="250"/></g>
+<g font-family="var(--mono)" font-size="12" fill="var(--chart-text)"><text x="14" y="44">1.40</text><text x="14" y="114">1.25</text><text x="14" y="184">1.10</text><text x="14" y="254">0.95</text><text x="86" y="284">initial</text><text x="240" y="284">submission 5</text><text x="446" y="284">D62</text><text x="626" y="284">D70</text><text x="776" y="284">D72</text></g>
+<path d="M110,42 L280,234 L460,242 L640,242 L790,243 L790,250 L110,250 Z" fill="var(--chart-fill)"/>
+<polyline points="110,42 280,234 460,242 640,242 790,243" fill="none" stroke="var(--chart-line)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<g fill="var(--chart-dot)" stroke="var(--chart-line)" stroke-width="3"><circle cx="110" cy="42" r="6"/><circle cx="280" cy="234" r="6"/><circle cx="460" cy="242" r="6"/><circle cx="640" cy="242" r="6"/><circle cx="790" cy="243" r="6"/></g>
+<g font-family="var(--mono)" font-size="13" fill="var(--chart-label)"><text x="126" y="46">1.3951</text><text x="296" y="222">0.9848</text><text x="766" y="226">0.9656</text></g></svg></div>
+    <figcaption><b>Figure 1.</b> Validation bits per byte at each checkpoint (lower is better). Nearly all of the improvement comes from the first change to the architecture together with the first fused kernels.</figcaption></figure>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Checkpoint</th><th class="r">val bpb</th><th>Change</th><th>Measurement</th></tr></thead>
+      <tbody>
+        <tr><td>Initial submission</td><td class="r">1.3951</td><td>Reference recipe</td><td>Starting point</td></tr>
+        <tr><td>Submission 5</td><td class="r">0.9848</td><td>Wider and shallower model, first fused kernels</td><td>Leaderboard; first place at its peak</td></tr>
+        <tr><td>D62</td><td class="r">0.9679</td><td>Embedding scatter kernel, batched Muon tail</td><td>Local</td></tr>
+        <tr><td>D70</td><td class="r">0.9669</td><td>FP8 projection path</td><td>Local</td></tr>
+        <tr class="best"><td>D72</td><td class="r">0.9656</td><td>Batched FP8 tables, fused RoPE</td><td>Local</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><b>Measurement</b><p>Local validation, the built artifact and the public leaderboard are three different measurements. Packaging and runtime differences produced measurable offsets between them, so they are reported separately.</p></div>
+
+    <h2 id="negative"><span class="num">05</span>Negative results</h2>
+    <h3>A faster kernel that slowed the trainer</h3>
+    <p>A BF16 matrix-multiplication kernel that kept weights resident was 6 to 18% faster than the stock operator in microbenchmarks. Inside the trainer it increased step time from about 0.715 s to 0.870 s, because synchronisation and integration costs exceeded the saving.</p>
+    <h3>Gating improved loss per step and reduced the number of steps</h3>
+    <p>Attention gates and smear gates gave the best loss at a matched step count. They also added enough small operations per step that the run completed fewer updates and ended with a worse model. Moving the multiplications into kernels did not recover the loss, because slicing small gate inputs and launching many small operations consumed the gain.</p>
+    <h3>More capacity, worse final model</h3>
+    <p>A 203M-parameter model with value embeddings learned faster per step, completed 11% fewer steps and finished behind. A ten-layer model showed the same pattern.</p>
+    <h3>Packaging errors</h3>
+    <p>One built candidate ran 7% slower because the builder omitted a flash-attention flag. An earlier artifact passed locally and failed in the scorer because a module alias recursed and fell back without reporting an error. The submission builder now has its own parity tests.</p>
+
+    <h2 id="conclusions"><span class="num">06</span>Conclusions</h2>
+    <ul>
+      <li>Under a time budget, the quantity to optimise is the score at the end of the budget. Proxies at a fixed step count are misleading.</li>
+      <li>Learning per step and time per step must be reported together for every experiment.</li>
+      <li>An end-to-end profile of the trainer is more reliable than any microbenchmark.</li>
+      <li>The code that builds the submission requires the same testing as the training code.</li>
+    </ul>
+
+  </div>
+  <div class="next"><a class="btn" href="arc-agi-2.html">Previous: ARC-AGI-2</a><a class="btn primary" href="kaggriculture.html">Next: Kaggriculture</a></div>
+</div></article></main>
+<footer class="site-foot"><div class="wrap">
+  <span>Ritwika Kancharla, 2026</span>
+  <span><a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a> &nbsp; <a href="https://github.com/ritwikareddykancharla">GitHub</a></span>
+</div></footer>
+</body>
+</html>

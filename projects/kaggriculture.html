@@ -1,16 +1,97 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Long-horizon learning agents for Kaggriculture — project report by Ritwika Kancharla."><title>Learning Agents for Kaggriculture</title>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Long-horizon learning agents for Kaggriculture — project report by Ritwika Kancharla."><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="../assets/site.css"></head>
-<body><header class="site-header"><nav class="wrap"><a class="site-name" href="../index.html">Ritwika Kancharla</a><div class="nav-links"><a href="../index.html#projects">Projects</a><a href="../index.html#publications">Publications</a><a href="https://github.com/ritwikareddykancharla">GitHub ↗</a></div></nav></header>
-<main><header class="article-header"><div class="wrap"><p class="eyebrow">Research report · multi-agent learning · September 2026</p><h1>Learning long-horizon economic strategy in Kaggriculture</h1><p class="dek">From scripted teachers and replay forensics to recurrent imitation and a reverse curriculum grounded in real terminal outcomes.</p><div class="meta"><span>Ritwika Kancharla</span><span>Behavior cloning</span><span>DAgger diagnostics</span><span>PPO curriculum</span><span>Portable NumPy inference</span><span class="tag">ongoing</span></div><div class="article-actions"><a class="button" href="https://www.kaggle.com/competitions/kaggriculture">Competition ↗</a></div></div></header>
-<div class="wrap article-layout"><aside class="toc"><h2>Contents</h2><ol><li><a href="#abstract">Abstract</a></li><li><a href="#environment">1. Environment</a></li><li><a href="#data">2. Data</a></li><li><a href="#learning">3. Learning system</a></li><li><a href="#evaluation">4. Evaluation</a></li><li><a href="#failures">5. Failure analysis</a></li><li><a href="#curriculum">6. RL curriculum</a></li></ol></aside>
-<article class="article-body"><div class="abstract" id="abstract"><h2>Abstract</h2><p>Kaggriculture is a two-player, long-horizon farming economy with simultaneous unit actions, production chains, market interaction, hidden shop variation, and approximately 719 decisions per complete game. A strong script can execute one coherent plan, but a learned agent must adapt when an opponent or earlier mistake changes the state. This project builds a traceable learning stack: complete teacher trajectories, chronological recurrent training, portable inference, fresh-seed evaluation, replay audits, and a reverse curriculum in which a teacher supplies a valid prefix and the learner controls the remaining suffix to the true terminal reward.</p></div>
-<h2 id="environment">1. Why the task is difficult</h2><p>Actions have delayed and coupled effects. Buying land is useful only if labor, seed, processing, transport, and market demand complete the chain before day 29. The opponent changes prices and accessible states. A locally legal action can make a later plan impossible, while an apparently idle action can preserve cash or synchronize workers for a high-value chain.</p><p>Ordinary action classification ignores these consequences. A recurrent learner must infer a latent economic plan while remaining robust when the observed state diverges from the teacher’s nominal route.</p>
-<h2 id="data">2. Building a trustworthy teacher corpus</h2><p>Two scripted strategies, Pipe7 and V47, were run across seeds, seats, and opponents. Conversion preserves full chronological trajectories rather than shuffling independent states. Each episode records the source hash, engine version, opponent, terminal cash, requested-action support by phase, replay hash, unit width, and market width.</p><div class="table-wrap"><table><thead><tr><th>Corpus property</th><th>Measured value</th></tr></thead><tbody><tr><td>Complete episode files</td><td>140</td></tr><tr><td>Teacher decisions</td><td>100,660</td></tr><tr><td>Decisions per full episode</td><td>719</td></tr><tr><td>Split hygiene</td><td>No seed shared between splits</td></tr><tr><td>Preparation regression checks</td><td>11 passed</td></tr></tbody></table></div>
-<p>Later-phase training reconstructs the recurrent prefix before computing the sampled loss. This prevents a hidden-state mismatch in which a model is asked to predict day-20 actions from an RNN state that never experienced days 0–19.</p>
-<h2 id="learning">3. Learning system</h2><figure class="method-figure"><div class="pipeline"><div class="pipeline-step">Scripted teachers<br>Pipe7 + V47</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Complete replay<br>chronological state</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Recurrent BC<br>full action space</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Fresh-seed audit<br>replay every failure</div><div class="pipeline-arrow">→</div><div class="pipeline-step">Teacher prefix<br>learner suffix RL</div></div><figcaption>The system moves toward reinforcement learning only after mechanics, export parity, and replay validity pass explicit gates.</figcaption></figure>
-<h3>Full-action recurrent imitation</h3><p>The policy predicts the official action space from public state, private inventory, units, market, shop state, time, and recurrent context. Training mixes teacher sources and complete episodes. Export parity verifies that portable NumPy inference agrees with the training implementation before evaluation.</p><h3>DAgger, with coherent teacher state</h3><p>A naive DAgger implementation queried Pipe7 after the learner created an off-route state. That is invalid if Pipe7’s hidden fields—route, pending actions, and sell state—do not match the new world. A deterministic teacher is deterministic only when its observation and internal controller state are coherent. Recovery labels therefore require validated teacher snapshots or fresh continuation rollouts.</p>
-<h2 id="evaluation">4. Evaluation is a replay audit</h2><p>A fixed checkpoint was tested on 16 unseen seeds, both seats, and three opponents for 96 games. The first aggregate looked better than reality because the official interpreter marked final status as <code>DONE</code> even when an earlier agent error occurred. A second evaluator inspected every status and verified that the learner was called for every decision.</p><div class="table-wrap"><table><thead><tr><th>Opponent</th><th>Games</th><th>Valid wins</th><th>Valid losses</th><th>Agent errors</th></tr></thead><tbody><tr><td>Wheat baseline</td><td>32</td><td>28</td><td>0</td><td>4</td></tr><tr><td>Pipe7</td><td>32</td><td>0</td><td>18</td><td>14</td></tr><tr><td>V47</td><td>32</td><td>0</td><td>20</td><td>12</td></tr><tr><td><strong>Total</strong></td><td><strong>96</strong></td><td><strong>28</strong></td><td><strong>38</strong></td><td><strong>30</strong></td></tr></tbody></table></div><p class="note">These numbers diagnose a particular normalized behavior-cloning checkpoint; they are not the strongest scripted-agent result. The project’s best Kaggle submission score is 2,562.9, and V47 beat Pipe7 in 30 of 40 recorded benchmark games.</p>
-<h2 id="failures">5. What the audit revealed</h2><h3>A capacity bug looked like strategic failure</h3><p>All 30 error games exceeded 16 active units immediately before failure. The policy representation supported 16, while the official environment permitted larger workforces. Clipping would hide the cause, so the input contract must expand and the affected games remain invalid.</p><h3>Training distribution dictated the opponent distribution</h3><p>The model trained on two Pipe7-versus-wheat games and won most valid fresh games against wheat, yet failed against Pipe7 and V47. In one audited seed, the first divergence occurred at decision 34 while private state was still identical. The model proposed fertilizer sale while Pipe7 waited, built a pasture, and bought wheat. This is direct evidence that opponent-induced states were absent from training.</p><h3>Action matching was confused with strategy learning</h3><p>Rewarding an exact Pipe7 action merely converts imitation loss into an RL-shaped number. It cannot reward a different action that yields a stronger terminal economy, and it inherits Pipe7’s hidden-state problem.</p>
-<h2 id="curriculum">6. Teacher-prefix, learner-suffix reinforcement learning</h2><p>The proposed curriculum preserves coherent state while giving the learner real consequences:</p><ol><li>Select seed, seat, opponent, teacher variant, and takeover boundary.</li><li>Replay the teacher from turn zero to that boundary, including all market and opponent interactions.</li><li>Transfer control permanently to the learner.</li><li>Run to termination; the teacher never resumes after the learner changes the world.</li><li>Run a paired teacher control game with the same seed, seat, and opponent.</li><li>Train from terminal return relative to the paired continuation, with legality and potential-based shaping as auxiliary feedback.</li></ol>
-<p>The boundary moves backward: terminal conversion on days 27–29, late investment, established-farm operation, shop adaptation, opening strategy, then the full 719-decision game. Each stage has paired-return and completion gates. Successful learner prefixes enter the replay mixture so the policy can eventually exceed rather than imitate the scripted teacher.</p><div class="callout"><strong>Central finding.</strong> The next useful RL experiment is not “run PPO on the current policy.” It is to construct valid suffix episodes on a transition system whose replay, hidden teacher state, input widths, and terminal accounting are already trusted.</div>
-</article></div></main><footer class="site-footer"><div class="wrap footer-row"><span><a href="../index.html">← Research index</a></span><span>Last updated September 2026</span></div></footer></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Kaggriculture: recurrent behaviour cloning on 100,660 expert decisions, a strict evaluation audit that exposed 30 invalid games, and a curriculum for reinforcement learning.">
+  <meta name="theme-color" content="#f2f5fa">
+  <title>Imitation Learning for a Long-Horizon Economic Game | Ritwika Kancharla</title>
+  <link rel="icon" href="../favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="site"><div class="bar">
+  <a class="brand" href="../index.html"><span class="mark">RK</span><span class="name">Ritwika Kancharla</span></a>
+  <nav aria-label="Site">
+    <a href="../index.html#projects" class="on">Projects</a>
+    <a href="../index.html#publications">Publications</a>
+    <a href="../index.html#background">Background</a>
+    <a href="https://github.com/ritwikareddykancharla">GitHub</a>
+  </nav>
+  <a class="btn contact" href="mailto:ritwikareddykancharla@gmail.com">Email</a>
+</div></header>
+
+<main><article class="demo"><div class="wrap">
+  <a class="crumb" href="../index.html#projects">&larr; All projects</a>
+  <header class="post-head">
+    <p class="eyebrow">Kaggle simulation, ongoing</p>
+    <h1 class="post-title">Imitation Learning for a Long-Horizon Economic Game</h1>
+    <p class="meta"><span>Ritwika Kancharla</span><span>September 2026</span><span>Work in progress</span><span><a href="https://www.kaggle.com/competitions/kaggriculture">Competition</a></span></p>
+    <div class="toc"><a class="chip" href="#problem">1. Problem statement</a><a class="chip" href="#data">2. Data</a><a class="chip" href="#approach">3. Approach</a><a class="chip" href="#evaluation">4. Evaluation audit</a><a class="chip" href="#findings">5. Findings</a><a class="chip" href="#future">6. Planned work: a hand-over curriculum for reinforcement learning</a></div>
+  </header>
+  <div class="post-body">
+    <div class="tldr"><p class="tk">Abstract</p><p>Kaggriculture is a two-player farming economy hosted on Kaggle. A full game consists of about 719 decisions in which each player buys land, plants, processes, transports and sells in a market shared with the opponent. This project trains a recurrent policy by behaviour cloning on 140 complete games (100,660 decisions) played by two scripted agents, <code>Pipe7</code> and <code>V47</code>.</p>
+<p>The learned policy is not yet competitive. The main contribution so far is methodological. The game engine reports a match as completed even when an agent raised an error during play, so the first evaluation overstated performance. A stricter audit of 96 games found 30 invalid games, all caused by a single input-encoding limit, and no wins against either scripted agent. My best leaderboard score, 2,562.9, comes from a scripted agent and not from the learned policy.</p></div>
+
+    <h2 id="problem"><span class="num">01</span>Problem statement</h2>
+    <p>Rewards in this game are delayed and depend on chains of actions. Buying land is useful only if labour, seed, processing, transport and demand all become available before day 29. The opponent changes prices and the set of reachable options. An apparently idle move can be correct because it preserves cash for a more valuable chain two days later.</p>
+    <p>A scripted agent can execute one coherent plan very well. It cannot recover when the opponent, or its own earlier error, moves the game into a state the plan did not anticipate. The aim of this project is a learned agent that can.</p>
+
+    <h2 id="data"><span class="num">02</span>Data</h2>
+    <p>Games were generated by running <code>Pipe7</code> and <code>V47</code> across seeds, both seats and several opponents. Each game is stored as one ordered sequence, together with the engine version, the opponent, the final cash and a hash that allows exact replay.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Corpus</th><th class="r">Value</th></tr></thead>
+      <tbody>
+        <tr><td>Complete games</td><td class="r">140</td></tr>
+        <tr><td>Expert decisions</td><td class="r">100,660</td></tr>
+        <tr><td>Decisions per game</td><td class="r">719</td></tr>
+        <tr><td>Seeds shared between training and test splits</td><td class="r">0</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="approach"><span class="num">03</span>Approach</h2>
+    <p>The policy is a recurrent network trained to predict the expert's action at each decision. When training on a later segment of a game, the earlier segment is first replayed through the network so that its hidden state matches the state it would have at that point in a real game. Without this step, the model is asked to predict day 20 from a memory that has not observed days 0 to 19, and it learns an inconsistent mapping.</p>
+
+    <h2 id="evaluation"><span class="num">04</span>Evaluation audit</h2>
+    <p>One checkpoint was evaluated on 16 unseen seeds, in both seats, against three opponents, for a total of 96 games. The first summary appeared acceptable. The engine, however, marks a match as <code>DONE</code> even if an agent raised an error partway through. A second evaluator was written that checks every status and confirms that the agent was called at every decision.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Opponent</th><th class="r">Games</th><th class="r">Valid wins</th><th class="r">Valid losses</th><th class="r">Invalid (agent error)</th></tr></thead>
+      <tbody>
+        <tr><td>Wheat baseline</td><td class="r">32</td><td class="r">28</td><td class="r">0</td><td class="r">4</td></tr>
+        <tr><td><code>Pipe7</code></td><td class="r">32</td><td class="r">0</td><td class="r">18</td><td class="r">14</td></tr>
+        <tr><td><code>V47</code></td><td class="r">32</td><td class="r">0</td><td class="r">20</td><td class="r">12</td></tr>
+        <tr class="best"><td>Total</td><td class="r">96</td><td class="r">28</td><td class="r">38</td><td class="r">30</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><b>Scope</b><p>These figures describe one behaviour-cloning checkpoint and are not my best competition result. For reference, <code>V47</code> beat <code>Pipe7</code> in 30 of 40 recorded games.</p></div>
+
+    <h2 id="findings"><span class="num">05</span>Findings</h2>
+    <h3>An encoding limit appeared as poor strategy</h3>
+    <p>All 30 invalid games failed immediately after the farm grew beyond 16 active units. The policy input has room for 16 units and the game permits more. Clipping the input would have hidden the defect, so the input format must be extended and the 30 games remain marked as invalid.</p>
+    <h3>The policy generalised only to the opponent seen in training</h3>
+    <p>The checkpoint was trained on games against the wheat baseline. It wins most valid games against that baseline and none against the two scripted agents. In one traced game, its first deviation from <code>Pipe7</code> occurred at decision 34, while both farms were still identical. States produced by a strong opponent were absent from the training data.</p>
+    <h3>Action matching does not teach strategy</h3>
+    <p>Rewarding the policy for selecting the expert's action is the imitation loss expressed as a reward. It cannot reward a different action that ends the game with more cash. Querying the script for its action after the learner has left the expert's trajectory is also invalid, because the script carries hidden state (its route, pending actions and selling mode) that no longer corresponds to the game. A script is deterministic only while its internal state and the game state agree.</p>
+
+    <h2 id="future"><span class="num">06</span>Planned work: a hand-over curriculum for reinforcement learning</h2>
+    <p>Applying PPO to the current policy would mainly optimise around these defects. The planned curriculum keeps the game state valid and exposes the learner to real outcomes.</p>
+    <ol>
+      <li>Select a seed, seat, opponent, script and hand-over day.</li>
+      <li>The script plays from turn zero to the hand-over day.</li>
+      <li>Control passes to the learner permanently.</li>
+      <li>The game is played to the end, and the final cash is compared with a paired game in which the script played throughout.</li>
+    </ol>
+    <p>The hand-over day moves earlier in stages: the last three days, late investment, operation of an established farm, the opening, and finally all 719 decisions. Each stage must outperform its paired control before the next stage begins.</p>
+
+  </div>
+  <div class="next"><a class="btn" href="trainium-of-thought.html">Previous: Trainium</a><a class="btn primary" href="cuda-optimization.html">Next: CUDA kernels</a></div>
+</div></article></main>
+<footer class="site-foot"><div class="wrap">
+  <span>Ritwika Kancharla, 2026</span>
+  <span><a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a> &nbsp; <a href="https://github.com/ritwikareddykancharla">GitHub</a></span>
+</div></footer>
+</body>
+</html>
