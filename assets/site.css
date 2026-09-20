@@ -301,9 +301,43 @@ figcaption code { font-size: 1em; }
 .game-notes p, .game-notes li { margin: 0 !important; font: 400 1.02rem/1.55 var(--read) !important; color: var(--body); max-width: none; }
 .game-notes ul { margin: 0 !important; padding-left: 1.1rem !important; }
 .game-notes li { margin-bottom: 5px !important; }
+.game-duck { margin-top: 10px !important; font: 400 11.5px/1.5 var(--mono) !important; color: var(--soft) !important; }
 .game-note { margin-top: 12px !important; padding-left: 12px; border-left: 2px solid var(--signal); }
 .game-notes .bars { margin-top: 4px; }
 .game-notes .bars-key { flex-wrap: wrap; gap: 6px 8px; margin-top: 12px !important; font: 400 11.5px/1.5 var(--mono) !important; color: var(--soft) !important; }
+
+/* scoreboard: every public game, one square per level */
+.post-body > .board-wrap { max-width: none; }
+.board-wrap { margin: 2rem 0; overflow-x: auto; background: var(--card); border: 1px solid var(--ink); box-shadow: 8px 8px 0 var(--cobalt-soft); }
+.board { width: 100%; min-width: 820px; border-collapse: collapse; font-size: 1rem; }
+.board thead th { padding: 14px 12px 12px; background: none; color: var(--ink); text-align: left; font: 700 .95rem/1.25 var(--display); letter-spacing: -.01em; text-transform: none; border-bottom: 2px solid var(--ink); white-space: normal; }
+.board thead th em { display: block; max-width: 22em; margin-top: 3px; font: 400 10.5px/1.4 var(--mono); font-style: normal; color: var(--soft); letter-spacing: 0; }
+.board thead th + th, .board td { border-left: 1px dashed var(--rule); }
+.board thead th.b-num { text-align: right; }
+.board tbody th { padding: 11px 8px 11px 14px; text-align: left; font-weight: 400; white-space: normal; background: none; color: inherit; text-transform: none; letter-spacing: 0; border-top: 1px solid var(--rule); }
+.board tbody th .st { white-space: nowrap; }
+.board tbody th code { margin-right: 8px; font-size: .86rem; }
+.board td { padding: 11px 10px; border-top: 1px solid var(--rule); vertical-align: middle; }
+.board tbody tr { transition: background .2s; }
+.board tbody tr:hover { background: var(--cobalt-soft); }
+.b-done { background: color-mix(in srgb, var(--ok) 6%, transparent); }
+.b-todo th code, .b-todo .dim { opacity: .55; }
+.lv { display: grid; grid-template-columns: 76px repeat(var(--n), 26px); gap: 2px; align-items: center; }
+.lv i { display: grid; place-items: center; height: 19px; font: 400 10px/1 var(--mono); font-style: normal; color: var(--soft); }
+.lv i:nth-child(-n + 11) { height: 14px; font-size: 9px; letter-spacing: .04em; }
+.lv-l { font: 400 10px/1 var(--mono); color: var(--soft); white-space: nowrap; }
+.lv .lv-l:nth-of-type(3) ~ i, .lv .lv-l:nth-of-type(4) ~ i { border: 1px solid var(--rule); }
+.lv .lv-l:nth-of-type(3) ~ i.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+.lv .lv-l:nth-of-type(4) ~ i.on { background: var(--soft); border-color: var(--soft); color: var(--card); }
+.lv .lv-l:nth-of-type(3), .lv .lv-l:nth-of-type(3) ~ i { margin-top: 2px; }
+.lv .lv-l:nth-of-type(3) { color: var(--ink); }
+.b-note { display: block; margin-top: 6px; white-space: normal; max-width: 15em; font: 400 10.5px/1.4 var(--mono); color: var(--soft); }
+.b-num { text-align: right; white-space: nowrap; }
+.b-num b { display: block; font: 500 .92rem var(--mono); color: var(--ink); }
+.b-num span { display: block; margin-top: 3px; font: 400 10.5px var(--mono); color: var(--soft); }
+.board tfoot th, .board tfoot td { padding: 14px 18px; border-top: 2px solid var(--ink); background: none; color: var(--ink); text-align: left; font: 700 .95rem var(--display); text-transform: none; letter-spacing: -.01em; }
+.board tfoot .b-num { text-align: right; }
+.st-todo { opacity: .7; }
 
 /* loop diagram */
 .loop { font-family: var(--display); }

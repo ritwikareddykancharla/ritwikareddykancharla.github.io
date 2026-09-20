@@ -113,6 +113,9 @@ CTRL = ('<div class="cmp-ctrl"><button class="btn primary cmp-play" type="button
         '<span class="cmp-count">loading</span></div>')
 
 
+DUCK = {"tn36": [2, 7], "lf52": [1, 10], "cn04": [1, 6], "bp35": [0, 9], "wa30": [0, 9], "lp85": [4, 8], "r11l": [1, 6], "tu93": [4, 9], "sp80": [0, 6], "m0r0": [1, 6], "vc33": [2, 7], "ar25": [1, 8], "ka59": [0, 7], "sc25": [0, 6], "sk48": [0, 8], "dc22": [1, 6], "cd82": [2, 6], "ft09": [2, 6], "g50t": [1, 7], "ls20": [1, 7], "re86": [4, 8], "s5i5": [1, 8], "sb26": [1, 8], "su15": [1, 9], "tr87": [1, 6]}
+
+
 def game(name, levels, actions, calls, agent, human, condition, stuck, harness, helps, note=""):
     top = max(human)
     rows = "".join(f'<div class="bar-row"><span class="bar-l">L{i}</span><div class="bar-pair">'
@@ -131,7 +134,8 @@ def game(name, levels, actions, calls, agent, human, condition, stuck, harness, 
             f'<h4>What the harness supplies</h4><ul>{items}</ul>'
             f'<h4>Why that is enough</h4><p>{helps}</p>{note}'
             f'<h4>Actions per level</h4><div class="bars">{rows}</div>'
-            f'<p class="bars-key"><i class="bar-h"></i>human baseline <i class="bar-a"></i>this system &nbsp; {calls} model calls in total</p></div></div></details>')
+            f'<p class="bars-key"><i class="bar-h"></i>human baseline <i class="bar-a"></i>this system &nbsp; {calls} model calls in total</p>'
+            f'<p class="game-duck">Duck baseline on this game <a href="#ref-8">[8]</a>: {DUCK[name][0]} of {DUCK[name][1]} levels.</p></div></div></details>')
 
 
 GAMES = "".join([
@@ -168,6 +172,77 @@ GAMES = "".join([
          ["Neutral identities for framed glyphs, so that a symbol is a name and not a picture to be rotated", "Persistent edges for each finite symbol wheel and for the cursor, learned once from observed transitions", "A guard that stops the agent from undoing its own last edit", "A parser for framed words and a direct constraint solver for the editable dictionary", "Composition of chained finite transducers, with checked execution one step at a time"],
          "Once glyphs are names and each wheel is a known cycle, a level is a small constraint problem: which dictionary entries must change so that the input word maps to the target word. The solver answers that exactly, including when two mappings have to be chained, and the plan is executed with a frame check after every action."),
 ])
+
+
+# ---- scoreboard of all 25 public games: this system against the Duck baseline run (tools/data/duck_kaggle_public25.json)
+import json as _json
+from pathlib import Path as _Path
+_DUCK = _json.loads((_Path(__file__).parent / "data" / "duck_kaggle_public25.json").read_text())
+_MINE = {  # game: (levels cleared, actions, note, actions per cleared level); games not listed have not been attempted
+    "ft09": (6, 75, "single run from empty memory", [4, 7, 14, 16, 21, 13]),
+    "sb26": (8, 124, "across resumed sessions", [9, 15, 15, 15, 17, 19, 17, 17]),
+    "r11l": (6, 138, "every level below its human baseline", [10, 18, 39, 18, 28, 25]),
+    "ka59": (7, 300, "level 7 used a disclosed public-trace prior", [11, 38, 33, 39, 20, 46, 113]),
+    "lp85": (8, 162, "across resumed sessions", [7, 41, 23, 17, 14, 20, 13, 27]),
+    "tr87": (6, 189, "no resets, no mispredicted action", [32, 38, 41, 36, 18, 24]),
+    "su15": (5, 87, "level 6 in progress", [25, 15, 18, 19, 9]),
+    "ar25": (1, 42, "checkpointed on level 2", [21]), "cn04": (1, 33, "level 2 in progress", [21]),
+    "bp35": (0, 20, "checkpointed", []), "dc22": (0, 17, "checkpointed", []), "g50t": (0, None, "in progress", []),
+    "ls20": (0, None, "pilot run", []), "cd82": (0, None, "pilot run", []),
+}
+
+
+def _strip(label, cls, values, total, cleared=None):
+    """One line of the per-level grid. `cleared` is how many leading levels count as cleared (None: all shown plainly)."""
+    cells = ""
+    for k in range(total):
+        v = values[k] if k < len(values) and values[k] else ""
+        on = cleared is not None and k < cleared
+        cells += f'<i class="{"on" if on else ""}">{v if (on or cleared is None) else ""}</i>'
+    return f'<span class="lv-l">{label}</span>{cells}'
+
+
+def _board():
+    def rank(g):
+        mine = _MINE.get(g)
+        complete = bool(mine) and mine[0] == _DUCK[g]["of"]
+        return (-complete, -(mine[0] if mine else -1), -_DUCK[g]["levels"], g)
+    rows = ""
+    for g in sorted(_DUCK, key=rank):
+        d, total = _DUCK[g], _DUCK[g]["of"]
+        mine = _MINE.get(g)
+        state = "done" if mine and mine[0] == total else "prog" if mine else "todo"
+        label = {"done": "complete", "prog": "in progress", "todo": "not attempted"}[state]
+        head = "".join(f"<i>L{k + 1}</i>" for k in range(total))
+        grid = (f'<div class="lv" style="--n:{total}"><span class="lv-l"></span>{head}'
+                + _strip("human", "h", d["human"], total)
+                + _strip("this system", "me", mine[3] if mine else [], total, mine[0] if mine else 0)
+                + _strip("Duck", "duck", d["per_level"], total, d["levels"]) + "</div>")
+        if mine:
+            acts = f'{mine[1]} actions' if mine[1] else "actions not recorded"
+            score = "score 100" if state == "done" else "score not final"
+            me = f'<td class="b-num"><b>{mine[0]} / {total}</b><span>{acts}</span><span>{score}</span></td>'
+        else:
+            me = f'<td class="b-num"><b class="dim">0 / {total}</b></td>'
+        human_total = sum(d["human"])
+        note = f'<span class="b-note">{mine[2]}</span>' if mine else ""
+        rows += (f'<tr class="b-{state}"><th scope="row"><code>{g}</code><span class="st st-{state}">{label}</span>{note}</th>'
+                 f'<td class="b-bar">{grid}</td><td class="b-num"><b>{human_total}</b><span>actions</span></td>{me}'
+                 f'<td class="b-num"><b>{d["levels"]} / {total}</b><span>{d["actions"]} actions</span><span>score {d["score"]:g}</span></td></tr>')
+    mine_levels = sum(v[0] for v in _MINE.values())
+    duck_levels = sum(v["levels"] for v in _DUCK.values())
+    total_levels = sum(v["of"] for v in _DUCK.values())
+    return ('<div class="board-wrap"><table class="board"><thead><tr><th scope="col">Game</th>'
+            '<th scope="col">Actions per level <em>a filled cell is a cleared level; the number is the actions it took</em></th>'
+            '<th scope="col" class="b-num">Human <em>all levels</em></th>'
+            '<th scope="col" class="b-num">This system <em>Qwen3.8-27B, H200</em></th>'
+            '<th scope="col" class="b-num">Duck baseline <em>Flash-Next, Kaggle GPU</em></th></tr></thead>'
+            f'<tbody>{rows}</tbody><tfoot><tr><th scope="row" colspan="2">Levels cleared</th><td></td>'
+            f'<td class="b-num"><b>{mine_levels} / {total_levels}</b><span>14 games attempted</span><span>6 games at score 100</span></td>'
+            f'<td class="b-num"><b>{duck_levels} / {total_levels}</b><span>25 games played</span><span>mean score 5.74</span></td></tr></tfoot></table></div>')
+
+
+BOARD = _board()
 
 
 def bars(game, agent, human):
@@ -257,7 +332,7 @@ ARC3 = dict(
     <p>The main departure from both systems is the division of labour. Schema and Retrodict leave perception and bookkeeping to a frontier model and enforce discipline around it. With a 27B model that division fails, so this harness computes perception and structural relations itself and asks the model only for the hypotheses that connect them.</p>
 
     <h3>An earlier attempt: running Retrodict unchanged on a smaller model</h3>
-    <p>Before this harness was written, the unmodified Retrodict prompt and runner were ported to a smaller local model (Qwen3.8-Flash-Next) with a 32,768-token context, where the original uses about 150,000. The first runs on <code>ls20</code> and <code>ft09</code> scored a mean of 2.38 and failed at the level of the protocol and not of the idea. One game ended when a 24,577-token prompt plus an 8,192-token completion exceeded the context. The other ended because the model used its entire completion for reasoning and returned an empty reply with no action block. A direct-interaction baseline on the same model scored 8.94 on the 25 public games. These results motivated the move to a 27B model and to a harness that carries more of the work.</p>
+    <p>Before this harness was written, the unmodified Retrodict prompt and runner were ported to a smaller local model (Qwen3.8-Flash-Next) with a 32,768-token context, where the original uses about 150,000. The first runs on <code>ls20</code> and <code>ft09</code> scored a mean of 2.38 and failed at the level of the protocol and not of the idea. One game ended when a 24,577-token prompt plus an 8,192-token completion exceeded the context. The other ended because the model used its entire completion for reasoning and returned an empty reply with no action block. A direct-interaction baseline (the Duck agent) on the same model scored 8.94 on the 25 public games in one run on rented hardware, and 5.74 in the Kaggle notebook run reported in the results table. These results motivated the move to a 27B model and to a harness that carries more of the work.</p>
 
     <h3>Use of the public Schema traces</h3>
     <p>The published Schema trajectories were used in four ways, all of them offline. First, they were read as a reference when diagnosing a failed game, to compare the representation a frontier model had reached with the one Qwen had reached; for example, the reference run of <code>bp35</code> describes a 6-pixel lattice in a persistent scrolling world, where Qwen had described two unrelated layouts. Second, they served as replay tests: the token simulator reproduces 417 of 417 transitions of the reference <code>ka59</code> trajectory. Third, the pickup abstraction used for <code>r11l</code> was taken from the reference trajectory and was labelled as a hypothesis until a live Qwen transition confirmed it. Fourth, level 7 of <code>ka59</code> used an action prior pruned from the reference trajectory. No reference action, coordinate or game-specific rule is placed in the model's prompt, and the first three uses shape reusable machinery only. The fourth is a direct use of a solution and is reported as such in the results.</p>
@@ -379,37 +454,9 @@ ARC3 = dict(
     <p>Six of the 25 public games are complete with the maximum local score of 100. Each entry below opens to a replay of the actual run, recorded action by action, together with an account of where the model alone got stuck, what the harness supplies for that game family, and why that is sufficient. A replay loads only when its entry is opened.</p>
     {GAMES}
     <h3>All 25 public games</h3>
-    <p>Six games are complete, eight are in progress and eleven have not been attempted.</p>
-    <div class="tablewrap wide"><table>
-      <thead><tr><th>Game</th><th>Status</th><th class="r">Levels</th><th class="r">Actions</th><th>Notes</th></tr></thead>
-      <tbody>
-        <tr class="best"><td><code>ft09</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">6 / 6</td><td class="r">75</td><td>Single run from empty memory</td></tr>
-        <tr class="best"><td><code>sb26</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">8 / 8</td><td class="r">124</td><td>Across resumed sessions</td></tr>
-        <tr class="best"><td><code>r11l</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">6 / 6</td><td class="r">138</td><td>Every level below its human baseline</td></tr>
-        <tr class="best"><td><code>ka59</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">7 / 7</td><td class="r">300</td><td>Level 7 used a disclosed prior from a public trace</td></tr>
-        <tr class="best"><td><code>lp85</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">8 / 8</td><td class="r">162</td><td>Across resumed sessions</td></tr>
-        <tr class="best"><td><code>tr87</code></td><td><span class="st st-done">complete, 100</span></td><td class="r">6 / 6</td><td class="r">189</td><td>No resets, no mispredicted action</td></tr>
-        <tr><td><code>su15</code></td><td><span class="st st-prog">in progress</span></td><td class="r">2 / 9</td><td class="r">50</td><td>Level 3 checkpointed</td></tr>
-        <tr><td><code>ar25</code></td><td><span class="st st-prog">in progress</span></td><td class="r">1 / 8</td><td class="r">42</td><td>Level 1 cleared at action 21; checkpointed</td></tr>
-        <tr><td><code>cn04</code></td><td><span class="st st-prog">in progress</span></td><td class="r">1</td><td class="r">33</td><td>Level 1 cleared at action 21; in progress</td></tr>
-        <tr><td><code>bp35</code></td><td><span class="st st-prog">in progress</span></td><td class="r">0 / 9</td><td class="r">20</td><td>Checkpointed; motivated the viewport, lattice-map and equivalence work</td></tr>
-        <tr><td><code>dc22</code></td><td><span class="st st-prog">in progress</span></td><td class="r">0</td><td class="r">17</td><td>Checkpointed after a context overflow that has since been fixed</td></tr>
-        <tr><td><code>g50t</code></td><td><span class="st st-prog">in progress</span></td><td class="r">0</td><td class="r"></td><td>In progress</td></tr>
-        <tr><td><code>ls20</code></td><td><span class="st st-prog">in progress</span></td><td class="r">0</td><td class="r"></td><td>Unsolved pilot run</td></tr>
-        <tr><td><code>cd82</code></td><td><span class="st st-prog">in progress</span></td><td class="r">0</td><td class="r"></td><td>Unsolved pilot run</td></tr>
-        <tr><td><code>lf52</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
-        <tr><td><code>m0r0</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
-        <tr><td><code>re86</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
-        <tr><td><code>s5i5</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
-        <tr><td><code>sc25</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
-        <tr><td><code>sk48</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
-        <tr><td><code>sp80</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
-        <tr><td><code>tn36</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
-        <tr><td><code>tu93</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
-        <tr><td><code>vc33</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
-        <tr><td><code>wa30</code></td><td><span class="st">not yet attempted</span></td><td class="r"></td><td class="r"></td><td></td></tr>
-      </tbody>
-    </table></div>
+    <p>Six games are complete, eight are in progress (the furthest, <code>su15</code>, has cleared 5 of 9 levels) and eleven have not been attempted. For every level the table gives the human reference actions next to the actions this system used. The last line of each game is a reference point: the levels, actions and score of the Duck agent <a href="#ref-8">[8]</a>, the open-source winner of the first milestone, in my Kaggle notebook run of 14 September 2026. That run cleared 32 of 183 levels across the 25 games, cleared at least one level in 19 games, completed no game, and had a mean score of 5.74. On the six games completed here it cleared 9 of 41 levels.</p>
+    <div class="note"><b>Not a like-for-like comparison</b><p>The Duck run used a smaller model (Qwen3.8-Flash-Next, NVFP4) on the Kaggle GPU and played all 25 games in 2 hours 12 minutes. The runs reported on this page use Qwen3.8-27B on an H200 with no time limit, across several sessions per game. Each cell is one level: the first line gives the actions a first-time human needed, the second the actions this system used on the levels it cleared, and the third the same for Duck. The comparison shows where a published direct-interaction agent stands on the same games; it does not isolate the effect of the harness.</p></div>
+    {BOARD}
     <div class="note"><b>Interpretation</b><p>A score of 100 is the local scorecard value for one public game. Public development results are not Kaggle leaderboard results, and a completed public game is evidence about the harness and not about hidden games.</p></div>
 
     <h2 id="negative">Negative results</h2>
@@ -450,6 +497,7 @@ ARC3 = dict(
       <li id="ref-5">Rodionov. Executable world models for ARC-AGI-3, 2026, <a href="https://arxiv.org/abs/2605.05138">arXiv:2605.05138</a>, and the accompanying ablation study, <a href="https://arxiv.org/abs/2607.15439">arXiv:2607.15439</a>, which reports that an executable model without replay verification can perform worse than plain text.</li>
       <li id="ref-6"><em>RGB-Agent</em> (alexisfox7). Source code. <a href="https://github.com/alexisfox7/RGB-Agent">github.com/alexisfox7/RGB-Agent</a>. The append-only log and the action queue in Retrodict follow this agent.</li>
       <li id="ref-7">ARC Prize Foundation. <em>ARC-AGI-3 methodology and the RHAE metric</em>. <a href="https://docs.arcprize.org/methodology">docs.arcprize.org/methodology</a>.</li>
+      <li id="ref-8">Tufa Labs. <em>The Duck</em>, first place in ARC-AGI-3 Milestone Prize #1, open-sourced as a Kaggle notebook. Announcement: <a href="https://arcprize.org/blog/arc-prize-2026-milestone-1">arcprize.org/blog/arc-prize-2026-milestone-1</a>.</li>
     </ol>
 """,
 )
