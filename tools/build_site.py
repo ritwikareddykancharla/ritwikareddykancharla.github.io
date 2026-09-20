@@ -35,22 +35,14 @@ def row(when, status, href, title, text, result, note, img):
 
 HOME = f"""
 <main>
-<section class="hero"><div class="hero-in">
+<section class="hero" style="--accent:#b3245f"><div class="hero-in">
   <div>
-    <p class="kicker"><i></i>Machine learning research and engineering</p>
-    <h1>Ritwika Kancharla</h1>
-    <p class="lede">I work on reasoning agents, learned optimization and efficient training systems. My current research is on the ARC Prize 2026 benchmarks, where I pair an open 27B language model with software that verifies each of its hypotheses before acting on it.</p>
-    <p class="lede">I hold an M.S. in Computer Science from Purdue University and a B.Tech in Computer Science from IIT Madras. Previously I was a Software Development Engineer in Amazon's Supply Chain Optimization Technologies group.</p>
-    <div class="actions"><a class="btn primary" href="#projects">View projects</a><a class="btn" href="#publications">Publications</a><a class="btn" href="{GITHUB}">GitHub</a></div>
+    <p class="kicker"><i></i>Portfolio</p>
+    <h1>Ritwika Kancharla&rsquo;s portfolio</h1>
+    <p class="lede">I am an <strong>ML/AI engineer</strong> focused on large language models, from training and optimization to GPU kernel design. My current research is on the <strong>ARC Prize 2026 benchmarks</strong> with an <strong>open 27B language model</strong>.</p>
+    <div class="actions"><a class="btn primary" href="#projects">View projects</a><a class="btn" href="./about.html">About me</a><a class="btn" href="{GITHUB}">GitHub</a></div>
   </div>
-  <aside class="now" aria-label="Current work">
-    <p class="now-k">Current work</p>
-    <ul>
-      <li><b>ARC-AGI-3</b><span>Interactive games solved with verified world models</span></li>
-      <li><b>ARC-AGI-2</b><span>Program induction checked against the training pairs</span></li>
-      <li><b>CUDA kernels</b><span>Cross-attention backward pass on Blackwell</span></li>
-    </ul>
-  </aside>
+  <figure class="hero-img"><img src="./assets/img/heroes/coffee-cat.jpg" width="736" height="414" alt="A painted Siamese cat holding a glass of iced coffee against a deep pink background with pressed flowers." style="object-position:50% 35%"></figure>
 </div></section>
 
 <section class="sec" id="projects"><div class="wrap">
@@ -78,9 +70,9 @@ HOME = f"""
   </div>
 
   <div class="rows">
-    {row("2026", "Completed", "./projects/trainium-of-thought.html", "Model and Kernel Co-Design under a 30-Minute Training Budget",
-         "A language-model training competition on AWS Trainium2 in which wall-clock time is the only budget. The architecture and the fused kernels were developed together so that more useful optimizer steps fit into 30 minutes.",
-         "1.3951 to 0.9656 val bpb", "First place on the public leaderboard at its peak.", "surfers")}
+    {row("2026", "Ongoing", "./projects/trainium-of-thought.html", "Trainium of Thought: Model and Kernel Co-Design under a 30-Minute Training Budget",
+         "My entry in the AWS Trainium Frontier Competition on Devpost, a language-model training competition on a single Trainium2 chip in which wall-clock time is the only budget. The architecture and the fused kernels were developed together so that more useful optimizer steps fit into 30 minutes.",
+         "1.3951 to 0.9656 val bpb", "Phase 1 ongoing. Currently 2nd on the public leaderboard; 1st at its peak.", "surfers")}
     {row("2026", "Ongoing", "./projects/kaggriculture.html", "Imitation Learning for a Long-Horizon Economic Game",
          "Recurrent behaviour cloning on a 719-decision farming economy. A strict evaluation audit showed that the first results were inflated by games in which the agent had failed, and it identified the cause.",
          "100,660 expert decisions", "140 complete games with seed-disjoint splits.", "tulips")}
@@ -93,22 +85,40 @@ HOME = f"""
   </div>
 </div></section>
 
-<section class="sec" id="publications"><div class="wrap">
-  <div class="sec-head"><h2>Publications</h2><p>Manuscripts and working papers. None of them has been peer reviewed. The PDF files are hosted on this site.</p></div>
-  <ol class="pubs">
-    <li><div><div class="t">Routing Foundation Model: A Unified Neural Optimization Framework for Large-Scale Routing and MILPs</div>
-      <div class="m">R. Kancharla. Monograph, 83 pages, 2025.</div>
-      <div class="l"><a class="chip" href="./rfm_monograph.pdf">PDF</a><a class="chip" href="./projects/routing-foundation-model.html">Project page</a><a class="chip" href="https://github.com/ritwikareddykancharla/RoutingAGI">Code</a></div></div></li>
-    <li><div><div class="t">MILP-Transformer: A Structure-Aware Neural Surrogate for Large-Scale Routing Optimization</div>
-      <div class="m">R. Kancharla. Manuscript, 2025.</div>
-      <div class="l"><a class="chip" href="./milp_transformer.pdf">PDF</a></div></div></li>
-    <li><div><div class="t">State-Space Autoregressive Decoding for Neural Combinatorial Optimization</div>
-      <div class="m">R. Kancharla. Position paper, 2025.</div>
-      <div class="l"><a class="chip" href="./ssm-nco.pdf">PDF</a><a class="chip" href="https://github.com/ritwikareddykancharla/routing-world-model">Code</a></div></div></li>
-    <li><div><div class="t">Diffusion and Mamba Models for Vehicle Routing: CVRP, VRPTW, Pickup and Delivery, Multi-Depot and Dynamic Routing</div>
-      <div class="m">R. Kancharla. Working paper series with code, 2025.</div>
-      <div class="l"><a class="chip" href="https://github.com/ritwikareddykancharla/diffusion-mamba-routing">Repository</a><a class="chip" href="https://github.com/ritwikareddykancharla/diffusion-routing">Diffusion models</a></div></div></li>
-  </ol>
+<section class="sec" id="contact"><div class="wrap">
+  <div class="reach">
+    <img src="./assets/img/heroes/sleeping-cat.jpg" width="735" height="412" alt="A woodblock-style print of a tabby cat asleep on a deep blue background." loading="lazy">
+    <div><h2>Contact</h2>
+      <p>For questions about any of these projects, or to discuss research and engineering work, send me an email.</p>
+      <div class="actions"><a class="btn primary" href="mailto:{EMAIL}">Email me</a><a class="btn" href="{GITHUB}">GitHub</a></div></div>
+  </div>
+</div></section>
+</main>
+"""
+
+
+ABOUT = f"""
+<main>
+<section class="hero about" style="--accent:#1d6b72"><div class="hero-in">
+  <div>
+    <p class="kicker"><i></i>About me</p>
+    <h1>Ritwika Kancharla</h1>
+    <p class="lede">I am an <strong>ML/AI engineer</strong> focused on large language models. I am interested in every part of the stack, from training and optimization to GPU kernel design and the agents built on top of the models.</p>
+    <p class="lede">My current research is on the <strong>ARC Prize 2026 benchmarks</strong>, where I pair an <strong>open 27B language model</strong> with software that verifies each of its hypotheses before acting on it.</p>
+    <p class="lede">I hold an M.S. in Computer Science from Purdue University and a B.Tech in Computer Science from IIT Madras. Previously I was a Software Development Engineer in Amazon's Supply Chain Optimization Technologies group.</p>
+    <div class="actions"><a class="btn primary" href="mailto:{EMAIL}">Email me</a><a class="btn" href="./index.html#projects">Projects</a><a class="btn" href="{GITHUB}">GitHub</a></div>
+  </div>
+  <div class="about-side">
+    <figure class="hero-img"><img src="./assets/img/heroes/terrace.jpg" width="735" height="490" alt="A stone terrace with flower urns under green branches, looking out over a bright turquoise lake." style="object-position:50% 70%"></figure>
+    <aside class="now" aria-label="Current work">
+      <p class="now-k">Current work</p>
+      <ul>
+        <li><b>ARC-AGI-3</b><span>Interactive games solved with verified world models</span></li>
+        <li><b>ARC-AGI-2</b><span>Program induction checked against the training pairs</span></li>
+        <li><b>CUDA kernels</b><span>Cross-attention backward pass on Blackwell</span></li>
+      </ul>
+    </aside>
+  </div>
 </div></section>
 
 <section class="sec" id="background"><div class="wrap">
@@ -124,15 +134,21 @@ HOME = f"""
   <div class="reach">
     <img src="./assets/img/heroes/sleeping-cat.jpg" width="735" height="412" alt="A woodblock-style print of a tabby cat asleep on a deep blue background." loading="lazy">
     <div><h2>Contact</h2>
-      <p>For questions about any of these projects, or to discuss research and engineering work, write to me by email.</p>
-      <div class="actions"><a class="btn primary" href="mailto:{EMAIL}">{EMAIL}</a><a class="btn" href="{GITHUB}">GitHub</a></div></div>
+      <p>For questions about any of these projects, or to discuss research and engineering work, send me an email.</p>
+      <div class="actions"><a class="btn primary" href="mailto:{EMAIL}">Email me</a><a class="btn" href="{GITHUB}">GitHub</a></div></div>
   </div>
 </div></section>
 </main>
 """
 
-index = shell(root="./", title="Ritwika Kancharla | Machine Learning Research",
+index = shell(root="./", title="Ritwika Kancharla | Portfolio",
               description="Ritwika Kancharla. Research and engineering in reasoning agents (ARC Prize 2026), language-model training under fixed compute, CUDA kernel optimization, and neural methods for vehicle routing.",
               body=HOME)
 (ROOT / "index.html").write_text(index)
 print("wrote index", len(index))
+
+about = shell(root="./", title="About | Ritwika Kancharla",
+              description="About Ritwika Kancharla: ML/AI engineer focused on large language models. Current work, education and experience, and contact.",
+              body=ABOUT, on_about=True)
+(ROOT / "about.html").write_text(about)
+print("wrote about", len(about))

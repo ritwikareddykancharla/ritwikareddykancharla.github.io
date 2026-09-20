@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 FONTS = ("https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500"
-         "&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400"
+         "&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400"
          "&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap")
 EMAIL = "ritwikareddykancharla@gmail.com"
 GITHUB = "https://github.com/ritwikareddykancharla"
@@ -35,8 +35,7 @@ SHELL = """<!doctype html>
   <a class="brand" href="@ROOT@index.html"><span class="mark">RK</span><span class="name">Ritwika Kancharla</span></a>
   <nav aria-label="Site">
     <a href="@ROOT@index.html#projects"@ON_PROJECTS@>Projects</a>
-    <a href="@ROOT@index.html#publications">Publications</a>
-    <a href="@ROOT@index.html#background">Background</a>
+    <a href="@ROOT@about.html"@ON_ABOUT@>About</a>
     <a href="@GITHUB@">GitHub</a>
   </nav>
   <a class="btn contact" href="mailto:@EMAIL@">Email</a>
@@ -44,7 +43,7 @@ SHELL = """<!doctype html>
 @BODY@
 <footer class="site-foot"><div class="wrap">
   <span>Ritwika Kancharla, 2026</span>
-  <span><a href="mailto:@EMAIL@">@EMAIL@</a> &nbsp; <a href="@GITHUB@">GitHub</a></span>
+  <span><a href="mailto:@EMAIL@">Email</a> &nbsp; <a href="@GITHUB@">GitHub</a></span>
 </div></footer>
 <a class="totop" href="#top" aria-label="Back to top"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ring-bg" cx="24" cy="24" r="21"/><circle class="ring" cx="24" cy="24" r="21"/><path d="M24 31V18M18 23.5l6-6 6 6"/></svg></a>
 <script src="@ROOT@assets/site.js?v=@JSV@" defer></script>
@@ -53,10 +52,11 @@ SHELL = """<!doctype html>
 """
 
 
-def shell(*, root, title, description, body, on_projects=False):
+def shell(*, root, title, description, body, on_projects=False, on_about=False):
     out = SHELL
     for key, val in (("@BODY@", body), ("@TITLE@", title), ("@DESC@", description), ("@FONTS@", FONTS),
-                     ("@ON_PROJECTS@", ' class="on"' if on_projects else ""), ("@ROOT@", root),
+                     ("@ON_PROJECTS@", ' class="on"' if on_projects else ""),
+                     ("@ON_ABOUT@", ' class="on"' if on_about else ""), ("@ROOT@", root),
                      ("@EMAIL@", EMAIL), ("@GITHUB@", GITHUB), ("@CSSV@", _ver("site.css")), ("@JSV@", _ver("site.js"))):
         out = out.replace(key, val)
     return out

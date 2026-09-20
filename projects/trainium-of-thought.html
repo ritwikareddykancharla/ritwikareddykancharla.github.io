@@ -9,16 +9,15 @@
   <link rel="icon" href="../favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/site.css?v=e0904753">
+  <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/site.css?v=f4ef01d4">
 </head>
 <body id="top">
 <header class="site"><div class="bar">
   <a class="brand" href="../index.html"><span class="mark">RK</span><span class="name">Ritwika Kancharla</span></a>
   <nav aria-label="Site">
     <a href="../index.html#projects" class="on">Projects</a>
-    <a href="../index.html#publications">Publications</a>
-    <a href="../index.html#background">Background</a>
+    <a href="../about.html">About</a>
     <a href="https://github.com/ritwikareddykancharla">GitHub</a>
   </nav>
   <a class="btn contact" href="mailto:ritwikareddykancharla@gmail.com">Email</a>
@@ -28,9 +27,9 @@
   <a class="crumb" href="../index.html#projects">&larr; All projects</a>
   <header class="post-head">
     <div class="head-text">
-      <p class="eyebrow">AWS Trainium Frontier, 2026</p>
+      <p class="eyebrow">Trainium of Thought: AWS Trainium Frontier Competition</p>
       <h1 class="post-title">Model and Kernel Co-Design under a 30-Minute Training Budget</h1>
-      <p class="meta"><span>Ritwika Kancharla</span><span>September 2026</span><span><a href="https://trainium-frontier.devpost.com/">Challenge</a></span></p>
+      <p class="meta"><span>Ritwika Kancharla</span><span>September 2026</span><span>Phase 1 ongoing, currently 2nd</span><span><a href="https://trainium-frontier.devpost.com/">Competition (Devpost)</a></span><span><a href="https://d3n62br6wsx257.cloudfront.net">Leaderboard</a></span></p>
     </div>
     <figure class="hero-img"><img src="../assets/img/heroes/surfers.jpg" alt="Surfers on coloured boards seen from directly above, spread across calm teal water." style="object-position:50% 50%"></figure>
     <div class="toc"><a class="chip" href="#problem">1. Problem statement</a><a class="chip" href="#method">2. Experimental protocol</a><a class="chip" href="#config">3. Final configuration</a><a class="chip" href="#results">4. Results</a><a class="chip" href="#negative">5. Negative results</a><a class="chip" href="#conclusions">6. Conclusions</a></div>
@@ -43,10 +42,11 @@
       <a class="side-top" href="#top">Back to top</a>
     </div></aside>
     <div class="post-body">
-      <div class="tldr"><p class="tk">Abstract</p><p>The AWS Trainium Frontier challenge fixes the hardware (AWS Trainium2), the dataset and the wall-clock time. Entries are ranked by the validation bits per byte of the language model that exists when 30 minutes of training have elapsed. Under this rule the number of optimizer steps is not fixed, so each design decision affects both how much the model learns per step and how many steps fit in the budget.</p>
-<p>This project reduced validation bits per byte from 1.3951 to 0.9656 in full-budget local runs. The best submitted model scored 0.9848 and held first place on the public leaderboard at its peak. Most of the improvement came from two changes that depend on each other: a wider and shallower model, and hand-fused kernels that shorten each training step. Several modifications that improved loss at a fixed step count produced a worse final model, and these negative results are reported.</p></div>
+      <div class="tldr"><p class="tk">Abstract</p><p>Trainium of Thought is my entry in the AWS Trainium Frontier Competition, which is run by AWS Annapurna Labs on Devpost. Phase 1 fixes the hardware (a single AWS Trainium2 chip), the dataset and the wall-clock time. Entries are ranked by the validation bits per byte of the language model that exists when 30 minutes of training have elapsed. Under this rule the number of optimizer steps is not fixed, so each design decision affects both how much the model learns per step and how many steps fit in the budget.</p>
+<p>This project reduced validation bits per byte from 1.3951 to 0.9656 in full-budget local runs. The best submitted model scored 0.9848 and held first place on the public leaderboard at its peak. Phase 1 is still open, and the entry is currently second on the public leaderboard (September 2026). Most of the improvement came from two changes that depend on each other: a wider and shallower model, and hand-fused kernels that shorten each training step. Several modifications that improved loss at a fixed step count produced a worse final model, and these negative results are reported.</p></div>
 
     <h2 id="problem"><span class="num">01</span>Problem statement</h2>
+    <p>The competition has two phases. In Phase 1, which closes on September 30, 2026, each team of one to four people trains a language model on a single Trainium2 chip within a strict 30-minute wall-clock budget. Submissions are ranked on a public leaderboard by validation bits per byte, which the organisers recompute from the model's logits with a trusted evaluation function. The ten highest-ranked teams advance to Phase 2, where they receive full Trn2 servers for scaled training. The prize pool is $40,000, and the winners are invited to present at NeurIPS 2026.</p>
     <p>The usual comparison between training recipes asks which one reaches the lowest loss after a fixed number of steps. Here the fixed quantity is time. A modification that lowers the loss at step 1,000 can still lose if it adds 20 ms to every step, because the run ends before the step at which the modification would have paid off. The objective is therefore the validation loss at the end of a complete 30-minute run, measured through the official scoring path. Short runs were used only to reject clearly unsuccessful ideas.</p>
 
     <h2 id="method"><span class="num">02</span>Experimental protocol</h2>
@@ -117,7 +117,7 @@
 </div></article></main>
 <footer class="site-foot"><div class="wrap">
   <span>Ritwika Kancharla, 2026</span>
-  <span><a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a> &nbsp; <a href="https://github.com/ritwikareddykancharla">GitHub</a></span>
+  <span><a href="mailto:ritwikareddykancharla@gmail.com">Email</a> &nbsp; <a href="https://github.com/ritwikareddykancharla">GitHub</a></span>
 </div></footer>
 <a class="totop" href="#top" aria-label="Back to top"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ring-bg" cx="24" cy="24" r="21"/><circle class="ring" cx="24" cy="24" r="21"/><path d="M24 31V18M18 23.5l6-6 6 6"/></svg></a>
 <script src="../assets/site.js?v=e47c58e8" defer></script>
