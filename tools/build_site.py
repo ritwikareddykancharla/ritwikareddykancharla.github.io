@@ -38,7 +38,8 @@ HOME = f"""
   <div>
     <p class="kicker"><i></i>Ritwika Kancharla</p>
     <h1>Hi, I&rsquo;m Ritwika. I&rsquo;m an ML engineer.</h1>
-    <p class="lede">I like the whole LLM stack: training models, making them fast, and getting them to solve hard problems. Here&rsquo;s what I&rsquo;ve been working on.</p>
+    <p class="lede">I like the whole LLM stack: training models, making them fast, and getting them to solve hard problems.</p>
+    <p class="lede">Right now I&rsquo;m getting an open 27B model to <a href="./projects/arc-agi-3.html">play games it has never seen</a> and to <a href="./projects/arc-agi-2.html">solve grid puzzles by writing programs</a>, for the ARC Prize 2026. I&rsquo;m also competing to <a href="./projects/trainium-of-thought.html">train the best language model I can in 30 minutes</a> on an AWS Trainium chip. You can read about each one in detail below.</p>
     <div class="actions"><a class="btn primary" href="#projects">View projects</a><a class="btn" href="./about.html">About me</a><a class="btn" href="{GITHUB}">GitHub</a></div>
   </div>
   <figure class="hero-img"><img src="./assets/img/heroes/coffee-cat.jpg" width="736" height="414" alt="A painted Siamese cat holding a glass of iced coffee against a deep pink background with pressed flowers." style="object-position:50% 35%"></figure>

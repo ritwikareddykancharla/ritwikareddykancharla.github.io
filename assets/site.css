@@ -50,6 +50,8 @@ a:focus-visible { outline: 2px solid var(--cobalt); outline-offset: 3px; }
 .hero h1 { margin: 0; font-size: clamp(2.2rem, 4.2vw, 3.5rem); line-height: 1.02; letter-spacing: -.045em; font-weight: 800; text-wrap: balance; }
 .lede { margin: 24px 0 0; max-width: 34em; font: 400 1.38rem/1.55 var(--read); color: var(--body); }
 .lede strong { font-weight: 600; color: var(--ink); }
+.lede a { color: var(--ink); text-decoration-color: var(--cobalt); text-decoration-thickness: 2px; text-underline-offset: 4px; transition: color .2s; }
+.lede a:hover { color: var(--cobalt); }
 .lede + .lede { margin-top: 14px; }
 .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 34px; }
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 56px; border-top: 2px solid var(--ink); }
