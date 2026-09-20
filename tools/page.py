@@ -1,12 +1,16 @@
 """Shared page shell. Every page of the site is written by tools/build_site.py through these two functions."""
 
+import hashlib
 import re
+from pathlib import Path
 
 FONTS = ("https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500"
          "&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400"
          "&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap")
 EMAIL = "ritwikareddykancharla@gmail.com"
 GITHUB = "https://github.com/ritwikareddykancharla"
+# the stylesheet keeps its name, so browsers holding an older copy must be told it changed
+CSS_VERSION = hashlib.sha1((Path(__file__).resolve().parent.parent / "assets" / "site.css").read_bytes()).hexdigest()[:8]
 
 SHELL = """<!doctype html>
 <html lang="en">
@@ -20,7 +24,7 @@ SHELL = """<!doctype html>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="@FONTS@" rel="stylesheet">
-  <link rel="stylesheet" href="@ROOT@assets/site.css">
+  <link rel="stylesheet" href="@ROOT@assets/site.css?v=@CSSV@">
 </head>
 <body>
 <header class="site"><div class="bar">
@@ -47,7 +51,7 @@ def shell(*, root, title, description, body, on_projects=False):
     out = SHELL
     for key, val in (("@BODY@", body), ("@TITLE@", title), ("@DESC@", description), ("@FONTS@", FONTS),
                      ("@ON_PROJECTS@", ' class="on"' if on_projects else ""), ("@ROOT@", root),
-                     ("@EMAIL@", EMAIL), ("@GITHUB@", GITHUB)):
+                     ("@EMAIL@", EMAIL), ("@GITHUB@", GITHUB), ("@CSSV@", CSS_VERSION)):
         out = out.replace(key, val)
     return out
 
