@@ -66,7 +66,7 @@ def shell(*, root, title, description, body, on_projects=False, on_about=False):
     return out
 
 
-def project(*, title, description, eyebrow, h1, meta, links, abstract, body, hero, prev=None, nxt=None):
+def project(*, title, description, eyebrow, h1, meta, links, abstract, body, hero, prev=None, nxt=None, scripts=()):
     """A project page. Every <h2 id="x"> in `body` is numbered; h2 and h3 headings build the sticky contents sidebar."""
     sections = []  # [id, title, [(sub id, sub title)]]
 
@@ -124,4 +124,5 @@ def project(*, title, description, eyebrow, h1, meta, links, abstract, body, her
     </div>
   </div>
 </div></article></main>"""
+    html += "".join(f'\n<script src="../assets/{name}?v={_ver(name)}" defer></script>' for name in scripts)
     return shell(root="../", title=title, description=description, body=html, on_projects=True)
