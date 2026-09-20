@@ -10,6 +10,7 @@ CHART = """<svg viewBox="0 0 860 300" role="img" aria-label="Validation bits per
 
 # =============================================================================== Trainium
 TRAINIUM = dict(
+    hero=dict(img="surfers", accent="#12737a", alt="Surfers on coloured boards seen from directly above, spread across calm teal water."),
     title="Model and Kernel Co-Design under a 30-Minute Training Budget | Ritwika Kancharla",
     description="AWS Trainium Frontier: validation bits per byte reduced from 1.3951 to 0.9656 within a fixed 30-minute training budget through joint changes to the architecture and the kernels.",
     eyebrow="AWS Trainium Frontier, 2026",
@@ -82,6 +83,7 @@ TRAINIUM = dict(
 
 # =============================================================================== Kaggriculture
 KAGG = dict(
+    hero=dict(img="tulips", accent="#c4356a", pos="50% 70%", alt="A field of pink tulips in front of sunlit, glittering water."),
     title="Imitation Learning for a Long-Horizon Economic Game | Ritwika Kancharla",
     description="Kaggriculture: recurrent behaviour cloning on 100,660 expert decisions, a strict evaluation audit that exposed 30 invalid games, and a curriculum for reinforcement learning.",
     eyebrow="Kaggle simulation, ongoing",
@@ -145,6 +147,7 @@ KAGG = dict(
 
 # =============================================================================== CUDA
 CUDA = dict(
+    hero=dict(img="citrus", accent="#c2410c", alt="Slices of orange, lemon, grapefruit and watermelon with ice cubes in rippling water."),
     title="A Verification-First Workflow for CUDA Kernel Optimization on Blackwell | Ritwika Kancharla",
     description="Contract CUDA work on the NVIDIA RTX PRO 6000 Blackwell: a kernel is accepted only if it is numerically correct, memory-safe and at least 1.2x faster than PyTorch on every workload.",
     eyebrow="Contract work, 2026",
@@ -207,6 +210,7 @@ CUDA = dict(
 
 # =============================================================================== Routing
 ROUTING = dict(
+    hero=dict(img="lakeside", accent="#8f5f14", pos="50% 55%", alt="A stone lakeside path with flower urns at sunset, leading toward a village under steep hills."),
     title="Routing Foundation Models | Ritwika Kancharla",
     description="A 2025 research proposal with prototypes on learned warm starts for vehicle-routing solvers: a MILP-structured encoder, diffusion-based candidate generation, state-space decoding and feasibility repair.",
     eyebrow="Research proposal, 2025 to 2026",

@@ -10,9 +10,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/site.css?v=14f48d06">
+  <link rel="stylesheet" href="../assets/site.css?v=e0904753">
 </head>
-<body>
+<body id="top">
 <header class="site"><div class="bar">
   <a class="brand" href="../index.html"><span class="mark">RK</span><span class="name">Ritwika Kancharla</span></a>
   <nav aria-label="Site">
@@ -24,16 +24,26 @@
   <a class="btn contact" href="mailto:ritwikareddykancharla@gmail.com">Email</a>
 </div></header>
 
-<main><article class="demo"><div class="wrap">
+<main><article class="demo" style="--accent:#c4356a"><div class="wrap">
   <a class="crumb" href="../index.html#projects">&larr; All projects</a>
   <header class="post-head">
-    <p class="eyebrow">Kaggle simulation, ongoing</p>
-    <h1 class="post-title">Imitation Learning for a Long-Horizon Economic Game</h1>
-    <p class="meta"><span>Ritwika Kancharla</span><span>September 2026</span><span>Work in progress</span><span><a href="https://www.kaggle.com/competitions/kaggriculture">Competition</a></span></p>
+    <div class="head-text">
+      <p class="eyebrow">Kaggle simulation, ongoing</p>
+      <h1 class="post-title">Imitation Learning for a Long-Horizon Economic Game</h1>
+      <p class="meta"><span>Ritwika Kancharla</span><span>September 2026</span><span>Work in progress</span><span><a href="https://www.kaggle.com/competitions/kaggriculture">Competition</a></span></p>
+    </div>
+    <figure class="hero-img"><img src="../assets/img/heroes/tulips.jpg" alt="A field of pink tulips in front of sunlit, glittering water." style="object-position:50% 70%"></figure>
     <div class="toc"><a class="chip" href="#problem">1. Problem statement</a><a class="chip" href="#data">2. Data</a><a class="chip" href="#approach">3. Approach</a><a class="chip" href="#evaluation">4. Evaluation audit</a><a class="chip" href="#findings">5. Findings</a><a class="chip" href="#future">6. Planned work: a hand-over curriculum for reinforcement learning</a></div>
   </header>
-  <div class="post-body">
-    <div class="tldr"><p class="tk">Abstract</p><p>Kaggriculture is a two-player farming economy hosted on Kaggle. A full game consists of about 719 decisions in which each player buys land, plants, processes, transports and sells in a market shared with the opponent. This project trains a recurrent policy by behaviour cloning on 140 complete games (100,660 decisions) played by two scripted agents, <code>Pipe7</code> and <code>V47</code>.</p>
+  <div class="post-grid">
+    <aside class="side" aria-label="Contents"><div class="side-in">
+      <p class="side-k"><span>Contents</span><span class="side-pct" aria-hidden="true">0%</span></p>
+      <div class="side-bar" aria-hidden="true"><i></i></div>
+      <ol class="side-list"><i class="side-ind" aria-hidden="true"></i><li><a href="#problem"><span class="sn">01</span><span>Problem statement</span></a></li><li><a href="#data"><span class="sn">02</span><span>Data</span></a></li><li><a href="#approach"><span class="sn">03</span><span>Approach</span></a></li><li><a href="#evaluation"><span class="sn">04</span><span>Evaluation audit</span></a></li><li><a href="#findings"><span class="sn">05</span><span>Findings</span></a><div class="sub"><ol><li><a href="#findings-1">An encoding limit appeared as poor strategy</a></li><li><a href="#findings-2">The policy generalised only to the opponent seen in training</a></li><li><a href="#findings-3">Action matching does not teach strategy</a></li></ol></div></li><li><a href="#future"><span class="sn">06</span><span>Planned work: a hand-over curriculum for reinforcement learning</span></a></li></ol>
+      <a class="side-top" href="#top">Back to top</a>
+    </div></aside>
+    <div class="post-body">
+      <div class="tldr"><p class="tk">Abstract</p><p>Kaggriculture is a two-player farming economy hosted on Kaggle. A full game consists of about 719 decisions in which each player buys land, plants, processes, transports and sells in a market shared with the opponent. This project trains a recurrent policy by behaviour cloning on 140 complete games (100,660 decisions) played by two scripted agents, <code>Pipe7</code> and <code>V47</code>.</p>
 <p>The learned policy is not yet competitive. The main contribution so far is methodological. The game engine reports a match as completed even when an agent raised an error during play, so the first evaluation overstated performance. A stricter audit of 96 games found 30 invalid games, all caused by a single input-encoding limit, and no wins against either scripted agent. My best leaderboard score, 2,562.9, comes from a scripted agent and not from the learned policy.</p></div>
 
     <h2 id="problem"><span class="num">01</span>Problem statement</h2>
@@ -69,11 +79,11 @@
     <div class="note"><b>Scope</b><p>These figures describe one behaviour-cloning checkpoint and are not my best competition result. For reference, <code>V47</code> beat <code>Pipe7</code> in 30 of 40 recorded games.</p></div>
 
     <h2 id="findings"><span class="num">05</span>Findings</h2>
-    <h3>An encoding limit appeared as poor strategy</h3>
+    <h3 id="findings-1">An encoding limit appeared as poor strategy</h3>
     <p>All 30 invalid games failed immediately after the farm grew beyond 16 active units. The policy input has room for 16 units and the game permits more. Clipping the input would have hidden the defect, so the input format must be extended and the 30 games remain marked as invalid.</p>
-    <h3>The policy generalised only to the opponent seen in training</h3>
+    <h3 id="findings-2">The policy generalised only to the opponent seen in training</h3>
     <p>The checkpoint was trained on games against the wheat baseline. It wins most valid games against that baseline and none against the two scripted agents. In one traced game, its first deviation from <code>Pipe7</code> occurred at decision 34, while both farms were still identical. States produced by a strong opponent were absent from the training data.</p>
-    <h3>Action matching does not teach strategy</h3>
+    <h3 id="findings-3">Action matching does not teach strategy</h3>
     <p>Rewarding the policy for selecting the expert's action is the imitation loss expressed as a reward. It cannot reward a different action that ends the game with more cash. Querying the script for its action after the learner has left the expert's trajectory is also invalid, because the script carries hidden state (its route, pending actions and selling mode) that no longer corresponds to the game. A script is deterministic only while its internal state and the game state agree.</p>
 
     <h2 id="future"><span class="num">06</span>Planned work: a hand-over curriculum for reinforcement learning</h2>
@@ -86,12 +96,15 @@
     </ol>
     <p>The hand-over day moves earlier in stages: the last three days, late investment, operation of an established farm, the opening, and finally all 719 decisions. Each stage must outperform its paired control before the next stage begins.</p>
 
+      <div class="next"><a class="btn" href="trainium-of-thought.html">Previous: Trainium</a><a class="btn primary" href="cuda-optimization.html">Next: CUDA kernels</a></div>
+    </div>
   </div>
-  <div class="next"><a class="btn" href="trainium-of-thought.html">Previous: Trainium</a><a class="btn primary" href="cuda-optimization.html">Next: CUDA kernels</a></div>
 </div></article></main>
 <footer class="site-foot"><div class="wrap">
   <span>Ritwika Kancharla, 2026</span>
   <span><a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a> &nbsp; <a href="https://github.com/ritwikareddykancharla">GitHub</a></span>
 </div></footer>
+<a class="totop" href="#top" aria-label="Back to top"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ring-bg" cx="24" cy="24" r="21"/><circle class="ring" cx="24" cy="24" r="21"/><path d="M24 31V18M18 23.5l6-6 6 6"/></svg></a>
+<script src="../assets/site.js?v=e47c58e8" defer></script>
 </body>
 </html>

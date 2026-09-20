@@ -6,7 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from page import EMAIL, GITHUB, project, shell
-from pages_arc import ARC2, ARC3
+from pages_arc import ARC2
+from pages_arc3 import ARC3
 from pages_other import CUDA, KAGG, ROUTING, TRAINIUM
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -23,10 +24,10 @@ for i, (slug, _, spec) in enumerate(PAGES):
     print("wrote", slug, len(html))
 
 
-def row(when, status, href, title, text, result, note):
+def row(when, status, href, title, text, result, note, img):
     live = f'<em class="live">{status}</em>' if status == "Ongoing" else f"<em>{status}</em>"
     return f"""<article class="row">
-      <div class="pm"><em>{when}</em>{live}</div>
+      <div class="row-side"><a class="thumb" href="{href}" tabindex="-1" aria-hidden="true"><img src="./assets/img/heroes/{img}-thumb.jpg" alt="" width="520" height="347"></a><div class="pm"><em>{when}</em>{live}</div></div>
       <div class="main"><h3><a href="{href}">{title}</a></h3><p>{text}</p></div>
       <div class="result"><b>{result}</b><br>{note}</div>
     </article>"""
@@ -79,16 +80,16 @@ HOME = f"""
   <div class="rows">
     {row("2026", "Completed", "./projects/trainium-of-thought.html", "Model and Kernel Co-Design under a 30-Minute Training Budget",
          "A language-model training competition on AWS Trainium2 in which wall-clock time is the only budget. The architecture and the fused kernels were developed together so that more useful optimizer steps fit into 30 minutes.",
-         "1.3951 to 0.9656 val bpb", "First place on the public leaderboard at its peak.")}
+         "1.3951 to 0.9656 val bpb", "First place on the public leaderboard at its peak.", "surfers")}
     {row("2026", "Ongoing", "./projects/kaggriculture.html", "Imitation Learning for a Long-Horizon Economic Game",
          "Recurrent behaviour cloning on a 719-decision farming economy. A strict evaluation audit showed that the first results were inflated by games in which the agent had failed, and it identified the cause.",
-         "100,660 expert decisions", "140 complete games with seed-disjoint splits.")}
+         "100,660 expert decisions", "140 complete games with seed-disjoint splits.", "tulips")}
     {row("2026", "Ongoing", "./projects/cuda-optimization.html", "A Verification-First Workflow for CUDA Kernel Optimization on Blackwell",
          "Contract work on the NVIDIA RTX PRO 6000. A kernel is accepted only if it is numerically correct, free of memory errors and at least 1.2&times; faster than PyTorch on every workload variant.",
-         "sm_120, 16 workload variants", "Two task tracks completed.")}
+         "sm_120, 16 workload variants", "Two task tracks completed.", "citrus")}
     {row("2025 to 2026", "Proposal", "./projects/routing-foundation-model.html", "Routing Foundation Models: Learned Warm Starts for Vehicle-Routing Solvers",
          "A hybrid design in which a learned model supplies an exact solver with diverse starting solutions, using a MILP-structured encoder, diffusion-based generation, state-space decoding and feasibility repair.",
-         "83-page monograph", "Three manuscripts and prototype code. Not yet benchmarked.")}
+         "83-page monograph", "Three manuscripts and prototype code. Not yet benchmarked.", "lakeside")}
   </div>
 </div></section>
 
@@ -116,6 +117,15 @@ HOME = f"""
     <article><span class="when">M.S.</span><h3>Purdue University</h3><p class="role">Computer Science</p><p>Coursework and projects in machine learning systems, distributed systems and high-performance computing.</p></article>
     <article><span class="when">Industry</span><h3>Amazon</h3><p class="role">Software Development Engineer, SCOT</p><p>Supply Chain Optimization Technologies, working close to routing and middle-mile logistics.</p></article>
     <article><span class="when">B.Tech</span><h3>IIT Madras</h3><p class="role">Computer Science</p><p>Foundations in algorithms, computer systems and mathematical optimization.</p></article>
+  </div>
+</div></section>
+
+<section class="sec" id="contact"><div class="wrap">
+  <div class="reach">
+    <img src="./assets/img/heroes/sleeping-cat.jpg" width="735" height="412" alt="A woodblock-style print of a tabby cat asleep on a deep blue background." loading="lazy">
+    <div><h2>Contact</h2>
+      <p>For questions about any of these projects, or to discuss research and engineering work, write to me by email.</p>
+      <div class="actions"><a class="btn primary" href="mailto:{EMAIL}">{EMAIL}</a><a class="btn" href="{GITHUB}">GitHub</a></div></div>
   </div>
 </div></section>
 </main>

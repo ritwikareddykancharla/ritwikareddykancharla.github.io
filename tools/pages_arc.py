@@ -1,6 +1,5 @@
 """The two ARC Prize 2026 project pages. Figures come from tools/build_arc3_figures.py and build_arc2_figures.py."""
 
-I3 = "../assets/img/arc3/"
 I2 = "../assets/img/arc2/"
 
 
@@ -11,111 +10,9 @@ def grid(src, w, h, alt, label, small=False):
 
 TO = '<div class="to" aria-hidden="true">&rarr;</div>'
 
-# =============================================================================== ARC-AGI-3
-ARC3 = dict(
-    title="Verified World Models for ARC-AGI-3 | Ritwika Kancharla",
-    description="An open 27B language model paired with a deterministic verification harness completes two public ARC-AGI-3 games (14 of 14 levels) without fine-tuning.",
-    eyebrow="ARC Prize 2026, ongoing",
-    h1="Verified World Models for Interactive Reasoning in ARC-AGI-3",
-    meta=["Ritwika Kancharla", "September 2026", "Work in progress"],
-    links=[("Competition", "https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3"),
-           ("Development PR", "https://github.com/ritwikareddykancharla/arc-agi3/pull/6")],
-    abstract="""<p>ARC-AGI-3 evaluates an agent on small interactive games for which no rules, goals or instructions are provided. This project studies whether an open-weight 27B language model (Qwen3.8-27B), used without any fine-tuning, can solve such games when it is paired with a deterministic software harness. The model is responsible only for proposing hypotheses about the game. The harness is responsible for perception, for recording every state transition, for testing each proposed rule against the recorded history, and for executing plans under explicit guard conditions.</p>
-<p>With this division of responsibility the system completed all 6 levels of the public game <code>ft09</code> and all 8 levels of the public game <code>sb26</code>. Both games were used during development. The results therefore validate the design of the harness and should not be read as an estimate of leaderboard performance.</p>""",
-    body=f"""
-    <figure class="fig"><div class="plate"><div class="frames">
-      <div><div class="frame"><img src="{I3}ft09-play.gif" width="256" height="270" alt="Animation of the game ft09 played from the first level to the last. Tiles in a grid change colour one click at a time until each level completes."></div><span class="cap">ft09: 6 of 6 levels, 75 actions</span></div>
-      <div><div class="frame"><img src="{I3}sb26-play.gif" width="256" height="270" alt="Animation of the game sb26. Coloured tokens are selected from a row at the bottom and placed into slots inside framed containers, level after level."></div><span class="cap">sb26: 8 of 8 levels, 124 actions</span></div>
-    </div></div>
-    <figcaption><b>Figure 1.</b> Qwen3.8-27B playing the two public games. Every frame is taken from the saved run logs. The row of squares beneath each game counts completed levels. The model received no description of the games, the actions or the objective.</figcaption></figure>
-
-    <h2 id="problem">Problem statement</h2>
-    <p>In ARC-AGI-2 a solver receives several solved examples and one test input. ARC-AGI-3 removes the examples. The agent receives a 64&times;64 frame with 16 colours and a small action set: four directional actions, a few buttons, and a click at a chosen coordinate. It must determine, by acting, which parts of the frame belong to the game world, what each action does, and what condition completes a level. The score rewards action efficiency, measured as the number of real actions the agent needs.</p>
-    <p>Levels within one game share their mechanics and increase in difficulty. Figure 2 shows the opening frame of every level of the two games studied here.</p>
-
-    <figure class="fig wide"><div class="plate">
-      <div class="frame"><img src="{I3}ft09-levels.png" width="1192" height="192" alt="Six opening frames of ft09, one per level. Each shows a grid of square tiles in two colours with a few small patterned tiles."></div>
-      <span class="cap" style="margin-bottom:18px">ft09, levels 1 to 6</span>
-      <div class="frame"><img src="{I3}sb26-levels.png" width="1592" height="192" alt="Eight opening frames of sb26, one per level. Each has a row of coloured outlines at the top, framed boxes with empty slots in the middle, and a row of coloured tokens at the bottom."></div>
-      <span class="cap">sb26, levels 1 to 8</span>
-    </div>
-    <figcaption><b>Figure 2.</b> Opening frames. In <code>ft09</code> a few tiles carry a small pattern that specifies the target state of a panel. In <code>sb26</code> a target row at the top specifies the order in which tokens must be read from the boxes below; from level 2 onward, boxes refer to other boxes.</figcaption></figure>
-
-    <p>The research question is one of transfer. Recent work on executable world models for this benchmark (WorldCoder, Schema, Retrodict, Tycho) relies on frontier models behind an API. This project asks how much of that approach remains effective when the model is a 27B open-weight model that can be served on a single GPU.</p>
-
-    <h2 id="baseline">Baseline and its failure modes</h2>
-    <p>The baseline agent presents the current frame to the model, lets it reason, executes the action it names, and repeats. This agent fails in the same three ways on almost every game.</p>
-    <ol>
-      <li><strong>Perception.</strong> Given a 64&times;64 grid as text, the model spends thousands of tokens transcribing rows and still misplaces object boundaries.</li>
-      <li><strong>Untested hypotheses.</strong> The model holds several explanations of an action at once (select, toggle, move) and does not design an action that would distinguish them.</li>
-      <li><strong>Loss of established facts.</strong> Once the context fills, a fact established on level 1 is derived again, sometimes incorrectly, on level 4.</li>
-    </ol>
-    <p>A larger reasoning budget does not remove any of these failures. Additional reasoning is useful only after the model is given a correct structured description of the game.</p>
-
-    <h2 id="approach">Approach</h2>
-    <p>The system separates proposing from checking. The language model proposes what the objects are, what an action does, and what completes a level. A deterministic Python harness, which contains no learned components, owns every operation that can be computed or verified exactly.</p>
-    <div class="tablewrap"><table>
-      <thead><tr><th>Component</th><th>Function</th></tr></thead>
-      <tbody>
-        <tr><td>Perception</td><td>Extracts connected regions, boxes, repeated shapes and tile grids with coordinates, and presents them as a table. It assigns no meaning to any object.</td></tr>
-        <tr><td>Transition ledger</td><td>Stores the frame before, the action, the frame after and the exact set of changed cells for every real action. When a model note contradicts the ledger, the harness cites the contradicting transition.</td></tr>
-        <tr><td>Rule verification</td><td>Replays each proposed rule over the full recorded history and reports the first transition at which it fails.</td></tr>
-        <tr><td>Guarded execution</td><td>A multi-action plan carries the cell changes the model expects. The harness executes one action at a time and halts at the first deviation.</td></tr>
-        <tr><td>Turn scheduling</td><td>Separates discovery turns from execution turns. A fully verified plan is executed without asking the model to reason about it again.</td></tr>
-      </tbody>
-    </table></div>
-    <p>The first actions on a new game are probes: single actions chosen to answer one question. Figure 3 shows the first action of the <code>sb26</code> run.</p>
-
-    <figure class="fig text"><div class="plate"><div class="frame"><img src="{I3}sb26-probe-1.png" width="656" height="320" alt="Two frames side by side. On the left a circle marks a token in the bottom row being clicked. On the right the same token has a white ring around it."></div></div>
-    <figcaption><b>Figure 3.</b> A probe action, before and after. The circle marks the click; the box on the right marks the 20 cells that changed. The model's stated purpose was: &ldquo;click bottom solid piece to learn interaction model (select vs move). Expect it to be removed from source if it moves.&rdquo; The token was not removed and gained a ring, which establishes that a click selects.</figcaption></figure>
-
-    <h2 id="cases">Case studies</h2>
-    <h3>ft09: a relation between distant regions</h3>
-    <p>Without assistance the model treated each panel of tiles as a separate puzzle. The missing element was a relation between regions that are far apart on screen: the small patterned tile inside a panel is a miniature of that panel's target state. Clicking a tile toggles its colour, and the level completes when every panel matches its miniature.</p>
-    <p>The harness was not changed to state this rule. It was changed to report panels in pairs, to express tile coordinates in panel space rather than pixel space, and to list reflections and colour permutations between regions as candidate relations. After this change the model's plans took the following form.</p>
-    <blockquote><p>Toggle BR tile (36,52) from blue to red to match micro swatch 0 at row2,col0. This is the last mismatch; expect level completion.</p><cite>Qwen3.8-27B, third action of the completed ft09 run</cite></blockquote>
-    <p>The run completed all six levels in 75 actions and 26 model calls, in about eleven minutes. No action produced a result that the model had not predicted.</p>
-
-    <h3>sb26: references between containers</h3>
-    <p>The top row gives the order in which tokens must appear. The boxes in the middle contain slots. From level 2 onward, some slots contain a hollow token in the colour of another box, which means that reading continues inside that box. A depth-first reading of the boxes yields one sequence, and the level completes when that sequence equals the top row.</p>
-    <p>A flat list of connected regions cannot express this structure. The harness therefore constructs a small graph: boxes contain slots, slots contain solid tokens or hollow references, and a hollow reference may point to the box of the same colour. The graph is built in 12 to 15 ms per frame and carries no interpretation of its edges. Given the graph, the model proposed the depth-first reading, the harness verified it against every completed level, and the remaining levels were solved largely by bookkeeping.</p>
-    <p>The run shown in Figure 1 used 124 actions and 90 model calls over 44 minutes. Thirteen actions produced an outcome the model had not predicted. In each case the harness halted the plan and the model revised its description.</p>
-
-    <h2 id="results">Results</h2>
-    <div class="tablewrap"><table>
-      <thead><tr><th>Game</th><th class="r">Levels</th><th class="r">Actions</th><th class="r">Model calls</th><th class="r">Mispredicted</th><th>Run conditions</th></tr></thead>
-      <tbody>
-        <tr><td><code>ft09</code></td><td class="r">6 / 6</td><td class="r">75</td><td class="r">26</td><td class="r">0</td><td>Single run from empty memory</td></tr>
-        <tr><td><code>sb26</code></td><td class="r">8 / 8</td><td class="r">124</td><td class="r">90</td><td class="r">13</td><td>Completed across several resumed sessions</td></tr>
-      </tbody>
-    </table></div>
-
-    <h2 id="negative">Negative results</h2>
-    <h3>An all-or-nothing verifier provides no gradient</h3>
-    <p>The first verifier asked the model for a complete simulator and counted a transition as correct only if all 4,096 cells matched. One wrong cell scored the same as a crash, and because the simulated state was rolled forward, one early error invalidated every later transition. The verifier now reports separately whether the code ran, how many transitions are exact, what fraction of cells is correct, and which transition fails first. New code replaces old code only if it improves on this backtest.</p>
-    <h3>Persistent memory can preserve an incorrect belief</h3>
-    <p>In one resumed <code>sb26</code> session the model's notes still stated that a click erases and repaints a token, long after the ledger showed the token moving as a block. Notes are now presented together with their age and with the harness's own record of what each action caused.</p>
-    <h3>Context compaction removed the most relevant evidence</h3>
-    <p>Naive summarisation kept long early discussions of pixels and discarded recent evidence. The current level is now kept in full, completed levels are removed oldest first, and what was learned from them is kept as a short rule with its counterexamples.</p>
-    <h3>Repeated verification of verified plans</h3>
-    <p>Even when exact target cells had been computed, the model spent thousands of tokens checking coordinates again. Separating discovery turns from execution turns removed most of this cost on later levels.</p>
-
-    <h2 id="limitations">Limitations</h2>
-    <p>Both games were inspected during development, so they constitute a development set. The <code>sb26</code> result was obtained across resumed sessions and is not a single uninterrupted run. No result here is a Kaggle score, and there is currently no evidence about games that were not studied during development.</p>
-
-    <h2 id="future">Future work</h2>
-    <ul>
-      <li>Freeze the harness and repeat both games from empty memory several times to measure how reliably they are completed.</li>
-      <li>Extend to the remaining public games, adding one general representation for the earliest failure observed on each.</li>
-      <li>Report time, tokens, real actions and the number of harness interventions as separate quantities.</li>
-      <li>Package the model and harness for the offline Kaggle GPU environment and measure how many games can run concurrently within the available KV cache.</li>
-      <li>Train on intermediate decisions (object roles, discriminating probes, repair location, stopping) and not only on final action sequences.</li>
-    </ul>
-""",
-)
-
 # =============================================================================== ARC-AGI-2
 ARC2 = dict(
+    hero=dict(img="hooded-cats", accent="#c2372e", alt="Painted cats wearing hoods in different floral patterns, scattered with blue stars on a cream background."),
     title="Verified Program Induction for ARC-AGI-2 | Ritwika Kancharla",
     description="A second ARC-AGI-2 solver in which a 27B model writes each puzzle's rule as a program that must reproduce the training pairs exactly. Verified programs are correct on the test grid in 10 of 15 cases.",
     eyebrow="ARC Prize 2026, ongoing",

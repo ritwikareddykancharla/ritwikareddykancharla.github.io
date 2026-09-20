@@ -4,15 +4,17 @@ Portfolio site of [Ritwika Kancharla](https://ritwikareddykancharla.github.io/):
 ARC Prize 2026, a 30-minute LM training competition, a long-horizon game agent, CUDA kernels, and
 earlier research on neural methods for vehicle routing.
 
-Static HTML, one stylesheet, no JavaScript. GitHub Pages publishes `main` from the repo root.
+Static HTML, one stylesheet and one small script (`assets/site.js`: contents sidebar, eased scrolling, back-to-top, reveal on scroll; pages work without it). GitHub Pages publishes `main` from the repo root.
 
 ```
 index.html               generated: intro, projects, publications, background
 projects/*.html          generated: one page per project
 assets/site.css          the theme (light, cobalt on cool paper)
 assets/img/arc2, arc3    figures, generated from real run data
+assets/img/heroes        one hero image per project page, plus thumbnails for the home page
 tools/page.py            page shell and the project-page template
-tools/pages_arc.py       text of the two ARC pages
+tools/pages_arc3.py      text of the ARC-AGI-3 page
+tools/pages_arc.py       text of the ARC-AGI-2 page
 tools/pages_other.py     text of the other four project pages
 tools/build_site.py      home page text; writes every HTML file
 ```

@@ -1,79 +1,47 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="An open 27B language model paired with a deterministic verification harness completes four public ARC-AGI-3 games without fine-tuning. Method, per-game results, negative results and limitations.">
-  <meta name="theme-color" content="#f2f5fa">
-  <title>Verified World Models for ARC-AGI-3 | Ritwika Kancharla</title>
-  <link rel="icon" href="../favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/site.css?v=e0904753">
-</head>
-<body id="top">
-<header class="site"><div class="bar">
-  <a class="brand" href="../index.html"><span class="mark">RK</span><span class="name">Ritwika Kancharla</span></a>
-  <nav aria-label="Site">
-    <a href="../index.html#projects" class="on">Projects</a>
-    <a href="../index.html#publications">Publications</a>
-    <a href="../index.html#background">Background</a>
-    <a href="https://github.com/ritwikareddykancharla">GitHub</a>
-  </nav>
-  <a class="btn contact" href="mailto:ritwikareddykancharla@gmail.com">Email</a>
-</div></header>
+"""ARC-AGI-3 project page. Facts: schema_agent/README.md and research/public-game-hardening-ledger.md (arc-agi3 PR #6)."""
 
-<main><article class="demo" style="--accent:#0f7a5a"><div class="wrap">
-  <a class="crumb" href="../index.html#projects">&larr; All projects</a>
-  <header class="post-head">
-    <div class="head-text">
-      <p class="eyebrow">ARC Prize 2026, ongoing</p>
-      <h1 class="post-title">Verified World Models for Interactive Reasoning in ARC-AGI-3</h1>
-      <p class="meta"><span>Ritwika Kancharla</span><span>September 2026</span><span>Work in progress</span><span><a href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3">Competition</a></span><span><a href="https://github.com/ritwikareddykancharla/arc-agi3/pull/6">Hardening sweep (PR #6)</a></span></p>
-    </div>
-    <figure class="hero-img"><img src="../assets/img/heroes/grotto.jpg" alt="A hidden grotto with a waterfall falling into a clear green pool, stone steps leading away through ferns and flowers." style="object-position:50% 60%"></figure>
-    <div class="toc"><a class="chip" href="#problem">1. Problem statement</a><a class="chip" href="#related">2. Prior work and what this project borrows</a><a class="chip" href="#baseline">3. Baseline and its failure modes</a><a class="chip" href="#system">4. System design</a><a class="chip" href="#setup">5. Experimental setup</a><a class="chip" href="#cases">6. Case studies</a><a class="chip" href="#results">7. Results</a><a class="chip" href="#negative">8. Negative results</a><a class="chip" href="#limitations">9. Limitations</a><a class="chip" href="#future">10. Future work</a><a class="chip" href="#references">11. References</a></div>
-  </header>
-  <div class="post-grid">
-    <aside class="side" aria-label="Contents"><div class="side-in">
-      <p class="side-k"><span>Contents</span><span class="side-pct" aria-hidden="true">0%</span></p>
-      <div class="side-bar" aria-hidden="true"><i></i></div>
-      <ol class="side-list"><i class="side-ind" aria-hidden="true"></i><li><a href="#problem"><span class="sn">01</span><span>Problem statement</span></a></li><li><a href="#related"><span class="sn">02</span><span>Prior work and what this project borrows</span></a><div class="sub"><ol><li><a href="#related-1">Schema</a></li><li><a href="#related-2">Retrodict</a></li><li><a href="#related-3">What was adopted, and how it was changed</a></li><li><a href="#related-4">An earlier attempt: running Retrodict unchanged on a smaller model</a></li><li><a href="#related-5">Use of the public Schema traces</a></li></ol></div></li><li><a href="#baseline"><span class="sn">03</span><span>Baseline and its failure modes</span></a></li><li><a href="#system"><span class="sn">04</span><span>System design</span></a><div class="sub"><ol><li><a href="#system-1">Observation and tools</a></li><li><a href="#system-2">Memory</a></li><li><a href="#system-3">Executable world model and replay verification</a></li><li><a href="#system-4">Search and guarded execution</a></li><li><a href="#system-5">Structural relations computed by the harness</a></li><li><a href="#system-6">Decision gates</a></li><li><a href="#system-7">Code execution, logging and resumption</a></li></ol></div></li><li><a href="#setup"><span class="sn">05</span><span>Experimental setup</span></a><div class="sub"><ol><li><a href="#setup-1">Evaluation protocol</a></li></ol></div></li><li><a href="#cases"><span class="sn">06</span><span>Case studies</span></a><div class="sub"><ol><li><a href="#cases-1">ft09: a relation between distant regions</a></li><li><a href="#cases-2">sb26: references between containers</a></li><li><a href="#cases-3">r11l: docking the centroid of a graph</a></li><li><a href="#cases-4">ka59: when the missing capability is executable state</a></li></ol></div></li><li><a href="#results"><span class="sn">07</span><span>Results</span></a></li><li><a href="#negative"><span class="sn">08</span><span>Negative results</span></a><div class="sub"><ol><li><a href="#negative-1">An all-or-nothing verifier provides no gradient</a></li><li><a href="#negative-2">Persistent memory can preserve an incorrect belief</a></li><li><a href="#negative-3">A checkpoint can overflow the context on its own</a></li><li><a href="#negative-4">More reasoning about settled evidence is not useful reasoning</a></li></ol></div></li><li><a href="#limitations"><span class="sn">09</span><span>Limitations</span></a></li><li><a href="#future"><span class="sn">10</span><span>Future work</span></a></li><li><a href="#references"><span class="sn">11</span><span>References</span></a></li></ol>
-      <a class="side-top" href="#top">Back to top</a>
-    </div></aside>
-    <div class="post-body">
-      <div class="tldr"><p class="tk">Abstract</p><p>ARC-AGI-3 evaluates an agent on small interactive games for which no rules, goals or instructions are provided. This project studies whether an open-weight 27B language model (Qwen3.8-27B), used without any fine-tuning, can solve such games when it is paired with a deterministic software harness. The model proposes hypotheses about the game. The harness owns perception, an immutable record of every transition, replay verification of each proposed rule, bounded search, and guarded execution of plans.</p>
-<p>The system has completed four of the 25 released public games with the maximum local score of 100: <code>ft09</code> (6 of 6 levels, 75 actions), <code>sb26</code> (8 of 8, 124 actions), <code>r11l</code> (6 of 6, 138 actions) and <code>ka59</code> (7 of 7, 300 actions). The final level of <code>ka59</code> used an action prior derived from a public reference trace, which is disclosed below. Six further games have been attempted and are partially solved or unsolved. All results are on public games that were studied during development. They validate the harness design and are not an estimate of leaderboard performance.</p></div>
+I3 = "../assets/img/arc3/"
 
+ARC3 = dict(
+    hero=dict(img="grotto", accent="#0f7a5a", pos="50% 60%", alt="A hidden grotto with a waterfall falling into a clear green pool, stone steps leading away through ferns and flowers."),
+    title="Verified World Models for ARC-AGI-3 | Ritwika Kancharla",
+    description="An open 27B language model paired with a deterministic verification harness completes four public ARC-AGI-3 games without fine-tuning. Method, per-game results, negative results and limitations.",
+    eyebrow="ARC Prize 2026, ongoing",
+    h1="Verified World Models for Interactive Reasoning in ARC-AGI-3",
+    meta=["Ritwika Kancharla", "September 2026", "Work in progress"],
+    links=[("Competition", "https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3"),
+           ("Hardening sweep (PR #6)", "https://github.com/ritwikareddykancharla/arc-agi3/pull/6")],
+    abstract="""<p>ARC-AGI-3 evaluates an agent on small interactive games for which no rules, goals or instructions are provided. This project studies whether an open-weight 27B language model (Qwen3.8-27B), used without any fine-tuning, can solve such games when it is paired with a deterministic software harness. The model proposes hypotheses about the game. The harness owns perception, an immutable record of every transition, replay verification of each proposed rule, bounded search, and guarded execution of plans.</p>
+<p>The system has completed four of the 25 released public games with the maximum local score of 100: <code>ft09</code> (6 of 6 levels, 75 actions), <code>sb26</code> (8 of 8, 124 actions), <code>r11l</code> (6 of 6, 138 actions) and <code>ka59</code> (7 of 7, 300 actions). The final level of <code>ka59</code> used an action prior derived from a public reference trace, which is disclosed below. Six further games have been attempted and are partially solved or unsolved. All results are on public games that were studied during development. They validate the harness design and are not an estimate of leaderboard performance.</p>""",
+    body=f"""
     <figure class="fig"><div class="plate"><div class="frames">
-      <div><div class="frame"><img src="../assets/img/arc3/ft09-play.gif" width="256" height="270" alt="Animation of the game ft09 played from the first level to the last. Tiles in a grid change colour one click at a time until each level completes."></div><span class="cap">ft09: 6 of 6 levels, 75 actions</span></div>
-      <div><div class="frame"><img src="../assets/img/arc3/sb26-play.gif" width="256" height="270" alt="Animation of the game sb26. Coloured tokens are selected from a row at the bottom and placed into slots inside framed containers, level after level."></div><span class="cap">sb26: 8 of 8 levels, 124 actions</span></div>
+      <div><div class="frame"><img src="{I3}ft09-play.gif" width="256" height="270" alt="Animation of the game ft09 played from the first level to the last. Tiles in a grid change colour one click at a time until each level completes."></div><span class="cap">ft09: 6 of 6 levels, 75 actions</span></div>
+      <div><div class="frame"><img src="{I3}sb26-play.gif" width="256" height="270" alt="Animation of the game sb26. Coloured tokens are selected from a row at the bottom and placed into slots inside framed containers, level after level."></div><span class="cap">sb26: 8 of 8 levels, 124 actions</span></div>
     </div></div>
     <figcaption><b>Figure 1.</b> Qwen3.8-27B playing two public games. Every frame is taken from the saved run logs. The row of squares beneath each game counts completed levels. The model received no description of the games, the actions or the objective.</figcaption></figure>
 
-    <h2 id="problem"><span class="num">01</span>Problem statement</h2>
+    <h2 id="problem">Problem statement</h2>
     <p>In ARC-AGI-2 a solver receives several solved examples and one test input. ARC-AGI-3 removes the examples. The agent receives a 64&times;64 frame with 16 colours and a small action set: directional actions, a few buttons, a click at a chosen coordinate, and a reset. It must determine, by acting, which parts of the frame belong to the game world, which parts are counters or legends, what each action does, and what condition completes a level. Levels within one game share their mechanics and increase in difficulty.</p>
     <p>The official metric is relative human action efficiency (RHAE) <a href="#ref-7">[7]</a>. It compares the number of real actions used on each level with the actions of a first-time human player, penalises the excess quadratically, gives no credit for a level that is not finished, and weights later levels more heavily than earlier ones. A wasted action is therefore expensive, and knowledge that carries over to later levels is valuable. Twenty-five games have been released publicly. The competition itself runs as a Kaggle code competition on hidden games with internet access disabled, which means that a submitted agent must carry its model with it.</p>
 
     <figure class="fig wide"><div class="plate">
-      <div class="frame"><img src="../assets/img/arc3/ft09-levels.png" width="1192" height="192" alt="Six opening frames of ft09, one per level. Each shows a grid of square tiles in two colours with a few small patterned tiles."></div>
+      <div class="frame"><img src="{I3}ft09-levels.png" width="1192" height="192" alt="Six opening frames of ft09, one per level. Each shows a grid of square tiles in two colours with a few small patterned tiles."></div>
       <span class="cap" style="margin-bottom:18px">ft09, levels 1 to 6</span>
-      <div class="frame"><img src="../assets/img/arc3/sb26-levels.png" width="1592" height="192" alt="Eight opening frames of sb26, one per level. Each has a row of coloured outlines at the top, framed boxes with empty slots in the middle, and a row of coloured tokens at the bottom."></div>
+      <div class="frame"><img src="{I3}sb26-levels.png" width="1592" height="192" alt="Eight opening frames of sb26, one per level. Each has a row of coloured outlines at the top, framed boxes with empty slots in the middle, and a row of coloured tokens at the bottom."></div>
       <span class="cap">sb26, levels 1 to 8</span>
     </div>
     <figcaption><b>Figure 2.</b> Opening frames of every level of two games. In <code>ft09</code> a few tiles carry a small pattern that specifies the target state of a panel. In <code>sb26</code> a target row at the top specifies the order in which tokens must be read from the boxes below; from level 2 onward, boxes refer to other boxes.</figcaption></figure>
 
-    <h2 id="related"><span class="num">02</span>Prior work and what this project borrows</h2>
+    <h2 id="related">Prior work and what this project borrows</h2>
     <p>This project did not invent its central idea. It belongs to the family of executable world models: a language model writes a program that describes the environment, the program is tested against what has actually been observed, and planning happens inside the tested program. WorldCoder <a href="#ref-3">[3]</a> introduced this for structured environments. Two systems for ARC-AGI-3, Schema <a href="#ref-1">[1]</a> and Retrodict <a href="#ref-2">[2]</a>, are the direct sources of the design described below, and Tycho <a href="#ref-4">[4]</a> belongs to the same family. An ablation study <a href="#ref-5">[5]</a> reports that an executable model that is not verified by replay can perform worse than plain text notes, which is why verification against the record is the centre of this design.</p>
 
-    <h3 id="related-1">Schema</h3>
+    <h3>Schema</h3>
     <p>Schema (Zeng et al., Impossible Research, UC Berkeley and CMU) treats the agent as a physicist. The agent must decide what the pixels are and how they move, and it keeps both decisions in one editable Python program with three functions: <code>parse_obs</code> (what the world is), <code>step</code> (how it changes) and <code>is_goal</code> (what counts as winning). A failed prediction may revise either the rules or the representation itself. Every real transition is appended to an immutable timeline. Inside one deliberation the agent writes code, replays the program against the full timeline, and searches inside the program only after the replay succeeds; a separate commit channel is the only operation that spends real actions, and one mismatch voids the rest of a committed plan. The authors report that the same frontier models improve from 42.83% under a generic coding-agent harness to 98.98% mean RHAE on the 25 public games. That figure is self-reported, on the public set, with a fallback to a second model on low-scoring games. The source code is not released, but 50 full trajectories and a scorer are public <a href="#ref-1">[1]</a>.</p>
 
-    <h3 id="related-2">Retrodict</h3>
+    <h3>Retrodict</h3>
     <p>Retrodict (Ryan Brown) is the inexpensive end of the same family. It treats each game as a laboratory notebook: every frame is appended to a log, a device it takes from RGB-Agent <a href="#ref-6">[6]</a>, and a hypothesis is first replayed over the recorded frames in a few lines of Python. This check is the retrodiction that gives the system its name, and a hypothesis that fails it costs no game action. Each model reply must end with a plan in which every action carries the cells it expects to see afterwards; the runner executes the plan without further model calls and halts at the first expectation that fails. A short playbook file survives context resets and marks each statement as checked against the log or still assumed. A full simulator is written only as an escalation, after a level has consumed about 300 actions or two resets. Retrodict reports 99.86% mean RHAE on the public games on an official scorecard, using 7,703 actions and about 660 million tokens of a frontier model <a href="#ref-2">[2]</a>.</p>
 
-    <h3 id="related-3">What was adopted, and how it was changed</h3>
+    <h3>What was adopted, and how it was changed</h3>
     <div class="tablewrap wide"><table>
       <thead><tr><th>Idea</th><th>Source</th><th>How it is used here</th><th>What changed for a 27B model</th></tr></thead>
       <tbody>
@@ -92,14 +60,14 @@
     </table></div>
     <p>The main departure from both systems is the division of labour. Schema and Retrodict leave perception and bookkeeping to a frontier model and enforce discipline around it. With a 27B model that division fails, so this harness computes perception and structural relations itself and asks the model only for the hypotheses that connect them.</p>
 
-    <h3 id="related-4">An earlier attempt: running Retrodict unchanged on a smaller model</h3>
+    <h3>An earlier attempt: running Retrodict unchanged on a smaller model</h3>
     <p>Before this harness was written, the unmodified Retrodict prompt and runner were ported to a smaller local model (Qwen3.8-Flash-Next) with a 32,768-token context, where the original uses about 150,000. The first runs on <code>ls20</code> and <code>ft09</code> scored a mean of 2.38 and failed at the level of the protocol and not of the idea. One game ended when a 24,577-token prompt plus an 8,192-token completion exceeded the context. The other ended because the model used its entire completion for reasoning and returned an empty reply with no action block. A direct-interaction baseline on the same model scored 8.94 on the 25 public games. These results motivated the move to a 27B model and to a harness that carries more of the work.</p>
 
-    <h3 id="related-5">Use of the public Schema traces</h3>
+    <h3>Use of the public Schema traces</h3>
     <p>The published Schema trajectories were used in four ways, all of them offline. First, they were read as a reference when diagnosing a failed game, to compare the representation a frontier model had reached with the one Qwen had reached; for example, the reference run of <code>bp35</code> describes a 6-pixel lattice in a persistent scrolling world, where Qwen had described two unrelated layouts. Second, they served as replay tests: the token simulator reproduces 417 of 417 transitions of the reference <code>ka59</code> trajectory. Third, the pickup abstraction used for <code>r11l</code> was taken from the reference trajectory and was labelled as a hypothesis until a live Qwen transition confirmed it. Fourth, level 7 of <code>ka59</code> used an action prior pruned from the reference trajectory. No reference action, coordinate or game-specific rule is placed in the model's prompt, and the first three uses shape reusable machinery only. The fourth is a direct use of a solution and is reported as such in the results.</p>
     <p>The research question that remains is one of transfer: how much of this approach stays effective when the model is a 27B open-weight model that can be served on a single GPU, and which responsibilities must move from the model into the harness to make it work.</p>
 
-    <h2 id="baseline"><span class="num">03</span>Baseline and its failure modes</h2>
+    <h2 id="baseline">Baseline and its failure modes</h2>
     <p>The baseline agent presents the current frame to the model, lets it reason, executes the action it names, and repeats. This agent fails in the same three ways on almost every game.</p>
     <ol>
       <li><strong>Perception.</strong> Given a 64&times;64 grid as text, the model spends thousands of tokens transcribing rows and still misplaces object boundaries.</li>
@@ -108,25 +76,25 @@
     </ol>
     <p>A larger reasoning budget does not remove any of these failures. Additional reasoning is useful only after the model is given a correct structured description of the game.</p>
 
-    <h2 id="system"><span class="num">04</span>System design</h2>
+    <h2 id="system">System design</h2>
     <p>The system separates proposing from checking. The language model proposes what the objects are, what an action does, and what completes a level. A deterministic Python harness, which contains no learned components, owns every operation that can be computed or verified exactly. No game identifier, coordinate, or level-specific answer is ever placed in the prompt or the harness.</p>
 
-    <h3 id="system-1">Observation and tools</h3>
+    <h3>Observation and tools</h3>
     <p>Each observation is presented losslessly as 64 rows of hexadecimal characters, one character per cell, with coordinates always given as <code>grid[y][x]</code>. The model can request numeric crops, connected components for every colour, and paginated retrieval of any earlier observation. Numeric colour identifiers are authoritative; rendered images are provided for geometry only, after one run spent more than 10,000 reasoning characters renaming colours it could already read as numbers. The model can also run Python in a compute tool and store reusable helper functions.</p>
 
-    <h3 id="system-2">Memory</h3>
+    <h3>Memory</h3>
     <p>Every real action is stored as an immutable transition: the frame before, the action, the frame after and the exact set of changed cells. The model keeps persistent notes, divided into evidence and hypotheses, and a JSON scratch memory. When a note contradicts the transition record, the harness cites the contradicting transition. Context compaction keeps the current observation and the notes, removes raw exchanges oldest first, and leaves all removed content retrievable. Compact checkpoints retain relational facts (counts, bounding boxes, colour transitions, component motions, level changes) and omit duplicated cell lists, which remain in the immutable artifacts.</p>
 
-    <h3 id="system-3">Executable world model and replay verification</h3>
+    <h3>Executable world model and replay verification</h3>
     <p>The harness provides a scaffold for an executable model of the game with cloning, raw-grid state and common grid helpers. The language model supplies only the game-specific parts through exact source patches: <code>parse_obs</code>, <code>step</code>, <code>render</code>, <code>is_goal</code>, and optionally <code>is_dead</code> and <code>legal_actions</code>. Verification replays the model sequentially from the initial observation of each level or reset segment and never injects a later true frame to conceal drift. At a completed level the verifier checks the goal prediction and does not require the model to predict the next, unseen layout. Agreement with history is treated as evidence and not as proof of rules that have not yet been observed.</p>
 
-    <h3 id="system-4">Search and guarded execution</h3>
+    <h3>Search and guarded execution</h3>
     <p>A bounded breadth-first search runs inside the verified model and reports one of five explicit outcomes: found, exhausted, depth limit, budget limit or error. Exploratory probes are single actions. A plan may contain at most 32 actions and carries either sparse expected cells and level changes or full model predictions. The harness executes one action at a time and halts at the first mismatch, level boundary or terminal state. An inaccurate model does not prevent a probe, because probes are how the model is corrected.</p>
 
-    <figure class="fig text"><div class="plate"><div class="frame"><img src="../assets/img/arc3/sb26-probe-1.png" width="656" height="320" alt="Two frames side by side. On the left a circle marks a token in the bottom row being clicked. On the right the same token has a white ring around it."></div></div>
+    <figure class="fig text"><div class="plate"><div class="frame"><img src="{I3}sb26-probe-1.png" width="656" height="320" alt="Two frames side by side. On the left a circle marks a token in the bottom row being clicked. On the right the same token has a white ring around it."></div></div>
     <figcaption><b>Figure 3.</b> A probe action, before and after. The circle marks the click; the box on the right marks the 20 cells that changed. The model's stated purpose was: &ldquo;click bottom solid piece to learn interaction model (select vs move). Expect it to be removed from source if it moves.&rdquo; The token was not removed and gained a ring, which establishes that a click selects.</figcaption></figure>
 
-    <h3 id="system-5">Structural relations computed by the harness</h3>
+    <h3>Structural relations computed by the harness</h3>
     <p>Most of the engineering effort went into relations that the harness computes exactly from recorded transitions and reports to the model as hypotheses. Each was added after a specific failure in a live trace and was validated by replaying that trace.</p>
     <div class="tablewrap wide"><table>
       <thead><tr><th>Relation</th><th>What it establishes</th><th>Motivating evidence</th></tr></thead>
@@ -145,7 +113,7 @@
       </tbody>
     </table></div>
 
-    <h3 id="system-6">Decision gates</h3>
+    <h3>Decision gates</h3>
     <p>Trace analysis showed that a large share of wall-clock time was spent reasoning about facts that the harness had already established. Three narrow gates replace a reasoning turn with a short commit turn when the evidence is settled. Other diagnostic turns keep the full reasoning budget.</p>
     <div class="tablewrap wide"><table>
       <thead><tr><th>Gate</th><th>Condition</th><th class="r">Before</th><th class="r">After</th></tr></thead>
@@ -157,10 +125,10 @@
     </table></div>
     <p>The no-op gate would not have fired in either of the first two completed games: <code>ft09</code> has no no-op among its 75 actions and <code>sb26</code> has none among 124. A fourth mechanism is a structured critique that is triggered when an objective has been exhausted without progress, for example when every matching component has been removed and the level has not advanced. The model must keep verified facts, list unexplained observations, compare three to five hypotheses from at least three families (including passive or support dynamics and multi-object contact dynamics), and commit to one discriminating probe.</p>
 
-    <h3 id="system-7">Code execution, logging and resumption</h3>
+    <h3>Code execution, logging and resumption</h3>
     <p>Model-written Python runs in disposable subprocesses with no inherited credentials, a restricted syntax tree and import list, no file or network access, and limits on CPU time, wall time and output. Each run stores an ordered event log, content-addressed copies of every request and raw response, every streamed chunk with its arrival time, all frames, and every version of the notes and the world model. An interrupted game can be resumed without repeating paid inference: the saved actions are replayed through the local engine, and every before and after frame is asserted to match.</p>
 
-    <h2 id="setup"><span class="num">05</span>Experimental setup</h2>
+    <h2 id="setup">Experimental setup</h2>
     <div class="tablewrap"><table>
       <thead><tr><th>Item</th><th>Setting</th></tr></thead>
       <tbody>
@@ -172,7 +140,7 @@
         <tr><td>Regression suite</td><td>156 tests, run after every change to the controller</td></tr>
       </tbody>
     </table></div>
-    <h3 id="setup-1">Evaluation protocol</h3>
+    <h3>Evaluation protocol</h3>
     <ol>
       <li>Each game starts from an empty workspace. No notes, actions, programs or facts are inherited from another game.</li>
       <li>Complete requests, responses, reasoning, tool calls, observations, actions and notes are preserved.</li>
@@ -182,24 +150,24 @@
       <li>Discovery on a new game is given at least the larger of 40 actions and 1.5 times the human baseline for level 1 before the game is set aside.</li>
     </ol>
 
-    <h2 id="cases"><span class="num">06</span>Case studies</h2>
-    <h3 id="cases-1">ft09: a relation between distant regions</h3>
+    <h2 id="cases">Case studies</h2>
+    <h3>ft09: a relation between distant regions</h3>
     <p>Without assistance the model treated each panel of tiles as a separate puzzle. The missing element was a relation between regions that are far apart on screen: the small patterned tile inside a panel is a miniature of that panel's target state. Clicking a tile toggles its colour, and the level completes when every panel matches its miniature. The harness was not changed to state this rule. It was changed to report panels in pairs, to express tile coordinates in panel space, and to list reflections and colour permutations between regions as candidate relations. After this change the model's plans took the following form.</p>
     <blockquote><p>Toggle BR tile (36,52) from blue to red to match micro swatch 0 at row2,col0. This is the last mismatch; expect level completion.</p><cite>Qwen3.8-27B, third action of the completed ft09 run</cite></blockquote>
     <p>The run completed all six levels in 75 actions and 26 model calls, in about eleven minutes. No action produced a result that the model had not predicted.</p>
 
-    <h3 id="cases-2">sb26: references between containers</h3>
+    <h3>sb26: references between containers</h3>
     <p>The top row gives the order in which tokens must appear. The boxes in the middle contain slots. From level 2 onward, some slots contain a hollow token in the colour of another box, which means that reading continues inside that box. A depth-first reading of the boxes yields one sequence, and the level completes when that sequence equals the top row. A flat list of connected regions cannot express this structure, so the harness constructs the container and reference graph, in 12 to 15 ms per frame, without interpreting its edges. Given the graph, the model proposed the depth-first reading, the harness verified it against every completed level, and a finite recursive assignment solver produced the remaining placements. The run used 124 actions and 90 model calls over 44 minutes across resumed sessions. Thirteen actions produced an outcome the model had not predicted, and in each case the harness halted the plan.</p>
 
-    <h3 id="cases-3">r11l: docking the centroid of a graph</h3>
+    <h3>r11l: docking the centroid of a graph</h3>
     <p>Clicking a diamond-shaped node transfers a selection, and clicking free ground moves the selected node. Each system of connected nodes has a marker at the floor mean of its members' centres, and a level completes when every marker rests on the ring with the matching colour signature. The model initially treated the markers as decoration. After four levels the game changes its representation: the system markers begin black, and separate half-coloured octagons must be collected by passing the marker over them before docking.</p>
     <p>Two exact-geometry errors were found through live mismatches. Collision had been approximated by a centre distance of at most four cells, which accepted the diagonal offset (4,4); the two 21-cell octagons have their corners removed and share no cell at that offset, and the game confirmed that nothing was collected. Collision is now computed from the rendered cell sets. Separately, a connector line crossing a marker added a structural colour to its signature, so signatures now accept only the item palette. The run completed all six levels in 138 actions and 145 model calls, with per-level counts of 10, 18, 39, 18, 28 and 25 actions against human baselines of 22, 33, 51, 26, 52 and 49.</p>
 
-    <h3 id="cases-4">ka59: when the missing capability is executable state</h3>
+    <h3>ka59: when the missing capability is executable state</h3>
     <p>In the first attempt the model made 152 calls and produced 614,648 completion tokens without clearing level 2. The decisive evidence was present in its own trace: at step 60 the selected token stayed fixed while a second token moved five lattice cells. The model described the selected token as &ldquo;blocked&rdquo;, continued to plan in screen coordinates, and never turned contact launching into a transition rule. The harness now owns a state model for this family of mechanics: it parses tokens on a 3-pixel lattice, models direct movement, bump launches, shoves, overshoot and countdown launches, replays recorded transitions, and plans with A*. It reproduces 417 of 417 transitions of a public reference trace and 110 of 110 transitions of the original Qwen trace.</p>
     <p>A clean run with this controller completed all seven levels in 300 actions with no resets, using 11, 38, 33, 39, 20, 46 and 113 actions against human baselines of 28, 109, 51, 51, 33, 132 and 326. Levels 1 to 6 were planned by the simulator. On level 7 the generic A* search exceeded one million states, so the run used a 113-action prior that was pruned from a 117-action public Schema trajectory and verified from the actual entry state. This level is therefore a result about the integrated system on public data and is not evidence of generalisation to hidden games.</p>
 
-    <h2 id="results"><span class="num">07</span>Results</h2>
+    <h2 id="results">Results</h2>
     <div class="tablewrap wide"><table>
       <thead><tr><th>Game</th><th class="r">Levels</th><th class="r">Score</th><th class="r">Actions</th><th>Status and conditions</th></tr></thead>
       <tbody>
@@ -218,17 +186,17 @@
     </table></div>
     <div class="note"><b>Interpretation</b><p>A score of 100 is the local scorecard value for one public game. Public development results are not Kaggle leaderboard results, and a completed public game is evidence about the harness and not about hidden games.</p></div>
 
-    <h2 id="negative"><span class="num">08</span>Negative results</h2>
-    <h3 id="negative-1">An all-or-nothing verifier provides no gradient</h3>
+    <h2 id="negative">Negative results</h2>
+    <h3>An all-or-nothing verifier provides no gradient</h3>
     <p>The first verifier asked the model for a complete simulator and counted a transition as correct only if all 4,096 cells matched. One wrong cell scored the same as a crash, and because the simulated state was rolled forward, one early error invalidated every later transition. The verifier now reports separately whether the code ran, how many transitions are exact, what fraction of cells is correct, and which transition fails first. New code replaces old code only if it improves on this backtest.</p>
-    <h3 id="negative-2">Persistent memory can preserve an incorrect belief</h3>
+    <h3>Persistent memory can preserve an incorrect belief</h3>
     <p>In one resumed <code>sb26</code> session the model's notes still stated that a click erases and repaints a token, long after the transition record showed the token moving as a block. Notes are now presented with their age and with the harness's own record of what each action caused. After a structural upgrade, a single short turn rewrites notes that the new relations contradict; on <code>dc22</code> this took 33.6 seconds and 805 tokens and removed a false claim that two glyphs had disappeared.</p>
-    <h3 id="negative-3">A checkpoint can overflow the context on its own</h3>
+    <h3>A checkpoint can overflow the context on its own</h3>
     <p>On <code>dc22</code> the run failed at action 17 even though every raw exchange had already been evicted. The remaining checkpoint was 170,280 characters, because exact cell arrays were duplicated in the ledger, the recent evidence and the last feedback. Compact checkpoints reduced the same trace to 97,912 characters, which fits in 96,416 of 131,072 tokens with the full diagnostic reserve.</p>
-    <h3 id="negative-4">More reasoning about settled evidence is not useful reasoning</h3>
+    <h3>More reasoning about settled evidence is not useful reasoning</h3>
     <p>The clearest example is the 325-second reply on <code>ar25</code>, in which the model selected the correct next probe near the start and then spent 15,919 tokens constructing an expectation for it. The probe changed 487 cells and was informative. The failure was latency and not judgement, which is why the decision gates are narrow.</p>
 
-    <h2 id="limitations"><span class="num">09</span>Limitations</h2>
+    <h2 id="limitations">Limitations</h2>
     <ul>
       <li>All results are on public games that were inspected during development. They constitute a development set.</li>
       <li>Several harness components were written after studying a failure on a specific game, and two of them (the token simulator and the pickup representation) were informed by public Schema traces. No game identifier or solution is encoded, but the risk that the harness is fitted to the public mechanics is real and can only be measured on games that were not studied.</li>
@@ -237,7 +205,7 @@
       <li>Fourteen of the 25 public games have not been attempted.</li>
     </ul>
 
-    <h2 id="future"><span class="num">10</span>Future work</h2>
+    <h2 id="future">Future work</h2>
     <ul>
       <li>Complete the sweep over all 25 public games, recording the earliest causal failure on each.</li>
       <li>Freeze the harness and repeat the completed games from empty memory several times to measure reliability, with <code>ft09</code> and <code>sb26</code> as regression sentinels.</li>
@@ -246,7 +214,7 @@
       <li>Train on intermediate decisions (object roles, discriminating probes, repair location, stopping) and not only on final action sequences.</li>
     </ul>
 
-    <h2 id="references"><span class="num">11</span>References</h2>
+    <h2 id="references">References</h2>
     <ol class="refs">
       <li id="ref-1">G. Zeng, J. Wang, W. Ma, S. Yin, C. Wang, S. Liu, A. Kanazawa, W. Ni, X. Li, A. Zanette and H. Feng. <em>Schema</em>. Project page, 2026. <a href="https://schema-harness.github.io/">schema-harness.github.io</a>. Trajectories and scorer: <a href="https://huggingface.co/datasets/schema-harness/arc-agi-3-schema-traces">schema-harness/arc-agi-3-schema-traces</a>.</li>
       <li id="ref-2">R. Brown. <em>Retrodict</em>. Source code, 2026. <a href="https://github.com/ryanbbrown/Retrodict">github.com/ryanbbrown/Retrodict</a>. Write-up: <a href="https://blog.ryanbbrown.com/p/how-i-accidentally-got-the-top-score">How I accidentally got the top score</a>. Official scorecard: <a href="https://arcprize.org/scorecards/9c403765-db5b-40b1-beab-6fa3f40119b0">arcprize.org/scorecards/9c403765</a>.</li>
@@ -256,16 +224,5 @@
       <li id="ref-6"><em>RGB-Agent</em> (alexisfox7). Source code. <a href="https://github.com/alexisfox7/RGB-Agent">github.com/alexisfox7/RGB-Agent</a>. The append-only log and the action queue in Retrodict follow this agent.</li>
       <li id="ref-7">ARC Prize Foundation. <em>ARC-AGI-3 methodology and the RHAE metric</em>. <a href="https://docs.arcprize.org/methodology">docs.arcprize.org/methodology</a>.</li>
     </ol>
-
-      <div class="next"><span></span><a class="btn primary" href="arc-agi-2.html">Next: ARC-AGI-2</a></div>
-    </div>
-  </div>
-</div></article></main>
-<footer class="site-foot"><div class="wrap">
-  <span>Ritwika Kancharla, 2026</span>
-  <span><a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a> &nbsp; <a href="https://github.com/ritwikareddykancharla">GitHub</a></span>
-</div></footer>
-<a class="totop" href="#top" aria-label="Back to top"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ring-bg" cx="24" cy="24" r="21"/><circle class="ring" cx="24" cy="24" r="21"/><path d="M24 31V18M18 23.5l6-6 6 6"/></svg></a>
-<script src="../assets/site.js?v=e47c58e8" defer></script>
-</body>
-</html>
+""",
+)

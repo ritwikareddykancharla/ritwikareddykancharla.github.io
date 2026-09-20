@@ -10,9 +10,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/site.css?v=14f48d06">
+  <link rel="stylesheet" href="../assets/site.css?v=e0904753">
 </head>
-<body>
+<body id="top">
 <header class="site"><div class="bar">
   <a class="brand" href="../index.html"><span class="mark">RK</span><span class="name">Ritwika Kancharla</span></a>
   <nav aria-label="Site">
@@ -24,16 +24,26 @@
   <a class="btn contact" href="mailto:ritwikareddykancharla@gmail.com">Email</a>
 </div></header>
 
-<main><article class="demo"><div class="wrap">
+<main><article class="demo" style="--accent:#12737a"><div class="wrap">
   <a class="crumb" href="../index.html#projects">&larr; All projects</a>
   <header class="post-head">
-    <p class="eyebrow">AWS Trainium Frontier, 2026</p>
-    <h1 class="post-title">Model and Kernel Co-Design under a 30-Minute Training Budget</h1>
-    <p class="meta"><span>Ritwika Kancharla</span><span>September 2026</span><span><a href="https://trainium-frontier.devpost.com/">Challenge</a></span></p>
+    <div class="head-text">
+      <p class="eyebrow">AWS Trainium Frontier, 2026</p>
+      <h1 class="post-title">Model and Kernel Co-Design under a 30-Minute Training Budget</h1>
+      <p class="meta"><span>Ritwika Kancharla</span><span>September 2026</span><span><a href="https://trainium-frontier.devpost.com/">Challenge</a></span></p>
+    </div>
+    <figure class="hero-img"><img src="../assets/img/heroes/surfers.jpg" alt="Surfers on coloured boards seen from directly above, spread across calm teal water." style="object-position:50% 50%"></figure>
     <div class="toc"><a class="chip" href="#problem">1. Problem statement</a><a class="chip" href="#method">2. Experimental protocol</a><a class="chip" href="#config">3. Final configuration</a><a class="chip" href="#results">4. Results</a><a class="chip" href="#negative">5. Negative results</a><a class="chip" href="#conclusions">6. Conclusions</a></div>
   </header>
-  <div class="post-body">
-    <div class="tldr"><p class="tk">Abstract</p><p>The AWS Trainium Frontier challenge fixes the hardware (AWS Trainium2), the dataset and the wall-clock time. Entries are ranked by the validation bits per byte of the language model that exists when 30 minutes of training have elapsed. Under this rule the number of optimizer steps is not fixed, so each design decision affects both how much the model learns per step and how many steps fit in the budget.</p>
+  <div class="post-grid">
+    <aside class="side" aria-label="Contents"><div class="side-in">
+      <p class="side-k"><span>Contents</span><span class="side-pct" aria-hidden="true">0%</span></p>
+      <div class="side-bar" aria-hidden="true"><i></i></div>
+      <ol class="side-list"><i class="side-ind" aria-hidden="true"></i><li><a href="#problem"><span class="sn">01</span><span>Problem statement</span></a></li><li><a href="#method"><span class="sn">02</span><span>Experimental protocol</span></a></li><li><a href="#config"><span class="sn">03</span><span>Final configuration</span></a></li><li><a href="#results"><span class="sn">04</span><span>Results</span></a></li><li><a href="#negative"><span class="sn">05</span><span>Negative results</span></a><div class="sub"><ol><li><a href="#negative-1">A faster kernel that slowed the trainer</a></li><li><a href="#negative-2">Gating improved loss per step and reduced the number of steps</a></li><li><a href="#negative-3">More capacity, worse final model</a></li><li><a href="#negative-4">Packaging errors</a></li></ol></div></li><li><a href="#conclusions"><span class="sn">06</span><span>Conclusions</span></a></li></ol>
+      <a class="side-top" href="#top">Back to top</a>
+    </div></aside>
+    <div class="post-body">
+      <div class="tldr"><p class="tk">Abstract</p><p>The AWS Trainium Frontier challenge fixes the hardware (AWS Trainium2), the dataset and the wall-clock time. Entries are ranked by the validation bits per byte of the language model that exists when 30 minutes of training have elapsed. Under this rule the number of optimizer steps is not fixed, so each design decision affects both how much the model learns per step and how many steps fit in the budget.</p>
 <p>This project reduced validation bits per byte from 1.3951 to 0.9656 in full-budget local runs. The best submitted model scored 0.9848 and held first place on the public leaderboard at its peak. Most of the improvement came from two changes that depend on each other: a wider and shallower model, and hand-fused kernels that shorten each training step. Several modifications that improved loss at a fixed step count produced a worse final model, and these negative results are reported.</p></div>
 
     <h2 id="problem"><span class="num">01</span>Problem statement</h2>
@@ -84,13 +94,13 @@
     <div class="note"><b>Measurement</b><p>Local validation, the built artifact and the public leaderboard are three different measurements. Packaging and runtime differences produced measurable offsets between them, so they are reported separately.</p></div>
 
     <h2 id="negative"><span class="num">05</span>Negative results</h2>
-    <h3>A faster kernel that slowed the trainer</h3>
+    <h3 id="negative-1">A faster kernel that slowed the trainer</h3>
     <p>A BF16 matrix-multiplication kernel that kept weights resident was 6 to 18% faster than the stock operator in microbenchmarks. Inside the trainer it increased step time from about 0.715 s to 0.870 s, because synchronisation and integration costs exceeded the saving.</p>
-    <h3>Gating improved loss per step and reduced the number of steps</h3>
+    <h3 id="negative-2">Gating improved loss per step and reduced the number of steps</h3>
     <p>Attention gates and smear gates gave the best loss at a matched step count. They also added enough small operations per step that the run completed fewer updates and ended with a worse model. Moving the multiplications into kernels did not recover the loss, because slicing small gate inputs and launching many small operations consumed the gain.</p>
-    <h3>More capacity, worse final model</h3>
+    <h3 id="negative-3">More capacity, worse final model</h3>
     <p>A 203M-parameter model with value embeddings learned faster per step, completed 11% fewer steps and finished behind. A ten-layer model showed the same pattern.</p>
-    <h3>Packaging errors</h3>
+    <h3 id="negative-4">Packaging errors</h3>
     <p>One built candidate ran 7% slower because the builder omitted a flash-attention flag. An earlier artifact passed locally and failed in the scorer because a module alias recursed and fell back without reporting an error. The submission builder now has its own parity tests.</p>
 
     <h2 id="conclusions"><span class="num">06</span>Conclusions</h2>
@@ -101,12 +111,15 @@
       <li>The code that builds the submission requires the same testing as the training code.</li>
     </ul>
 
+      <div class="next"><a class="btn" href="arc-agi-2.html">Previous: ARC-AGI-2</a><a class="btn primary" href="kaggriculture.html">Next: Kaggriculture</a></div>
+    </div>
   </div>
-  <div class="next"><a class="btn" href="arc-agi-2.html">Previous: ARC-AGI-2</a><a class="btn primary" href="kaggriculture.html">Next: Kaggriculture</a></div>
 </div></article></main>
 <footer class="site-foot"><div class="wrap">
   <span>Ritwika Kancharla, 2026</span>
   <span><a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a> &nbsp; <a href="https://github.com/ritwikareddykancharla">GitHub</a></span>
 </div></footer>
+<a class="totop" href="#top" aria-label="Back to top"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ring-bg" cx="24" cy="24" r="21"/><circle class="ring" cx="24" cy="24" r="21"/><path d="M24 31V18M18 23.5l6-6 6 6"/></svg></a>
+<script src="../assets/site.js?v=e47c58e8" defer></script>
 </body>
 </html>

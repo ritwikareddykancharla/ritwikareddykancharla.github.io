@@ -10,9 +10,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/site.css?v=14f48d06">
+  <link rel="stylesheet" href="./assets/site.css?v=e0904753">
 </head>
-<body>
+<body id="top">
 <header class="site"><div class="bar">
   <a class="brand" href="./index.html"><span class="mark">RK</span><span class="name">Ritwika Kancharla</span></a>
   <nav aria-label="Site">
@@ -69,22 +69,22 @@
 
   <div class="rows">
     <article class="row">
-      <div class="pm"><em>2026</em><em>Completed</em></div>
+      <div class="row-side"><a class="thumb" href="./projects/trainium-of-thought.html" tabindex="-1" aria-hidden="true"><img src="./assets/img/heroes/surfers-thumb.jpg" alt="" width="520" height="347"></a><div class="pm"><em>2026</em><em>Completed</em></div></div>
       <div class="main"><h3><a href="./projects/trainium-of-thought.html">Model and Kernel Co-Design under a 30-Minute Training Budget</a></h3><p>A language-model training competition on AWS Trainium2 in which wall-clock time is the only budget. The architecture and the fused kernels were developed together so that more useful optimizer steps fit into 30 minutes.</p></div>
       <div class="result"><b>1.3951 to 0.9656 val bpb</b><br>First place on the public leaderboard at its peak.</div>
     </article>
     <article class="row">
-      <div class="pm"><em>2026</em><em class="live">Ongoing</em></div>
+      <div class="row-side"><a class="thumb" href="./projects/kaggriculture.html" tabindex="-1" aria-hidden="true"><img src="./assets/img/heroes/tulips-thumb.jpg" alt="" width="520" height="347"></a><div class="pm"><em>2026</em><em class="live">Ongoing</em></div></div>
       <div class="main"><h3><a href="./projects/kaggriculture.html">Imitation Learning for a Long-Horizon Economic Game</a></h3><p>Recurrent behaviour cloning on a 719-decision farming economy. A strict evaluation audit showed that the first results were inflated by games in which the agent had failed, and it identified the cause.</p></div>
       <div class="result"><b>100,660 expert decisions</b><br>140 complete games with seed-disjoint splits.</div>
     </article>
     <article class="row">
-      <div class="pm"><em>2026</em><em class="live">Ongoing</em></div>
+      <div class="row-side"><a class="thumb" href="./projects/cuda-optimization.html" tabindex="-1" aria-hidden="true"><img src="./assets/img/heroes/citrus-thumb.jpg" alt="" width="520" height="347"></a><div class="pm"><em>2026</em><em class="live">Ongoing</em></div></div>
       <div class="main"><h3><a href="./projects/cuda-optimization.html">A Verification-First Workflow for CUDA Kernel Optimization on Blackwell</a></h3><p>Contract work on the NVIDIA RTX PRO 6000. A kernel is accepted only if it is numerically correct, free of memory errors and at least 1.2&times; faster than PyTorch on every workload variant.</p></div>
       <div class="result"><b>sm_120, 16 workload variants</b><br>Two task tracks completed.</div>
     </article>
     <article class="row">
-      <div class="pm"><em>2025 to 2026</em><em>Proposal</em></div>
+      <div class="row-side"><a class="thumb" href="./projects/routing-foundation-model.html" tabindex="-1" aria-hidden="true"><img src="./assets/img/heroes/lakeside-thumb.jpg" alt="" width="520" height="347"></a><div class="pm"><em>2025 to 2026</em><em>Proposal</em></div></div>
       <div class="main"><h3><a href="./projects/routing-foundation-model.html">Routing Foundation Models: Learned Warm Starts for Vehicle-Routing Solvers</a></h3><p>A hybrid design in which a learned model supplies an exact solver with diverse starting solutions, using a MILP-structured encoder, diffusion-based generation, state-space decoding and feasibility repair.</p></div>
       <div class="result"><b>83-page monograph</b><br>Three manuscripts and prototype code. Not yet benchmarked.</div>
     </article>
@@ -117,11 +117,22 @@
     <article><span class="when">B.Tech</span><h3>IIT Madras</h3><p class="role">Computer Science</p><p>Foundations in algorithms, computer systems and mathematical optimization.</p></article>
   </div>
 </div></section>
+
+<section class="sec" id="contact"><div class="wrap">
+  <div class="reach">
+    <img src="./assets/img/heroes/sleeping-cat.jpg" width="735" height="412" alt="A woodblock-style print of a tabby cat asleep on a deep blue background." loading="lazy">
+    <div><h2>Contact</h2>
+      <p>For questions about any of these projects, or to discuss research and engineering work, write to me by email.</p>
+      <div class="actions"><a class="btn primary" href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a><a class="btn" href="https://github.com/ritwikareddykancharla">GitHub</a></div></div>
+  </div>
+</div></section>
 </main>
 
 <footer class="site-foot"><div class="wrap">
   <span>Ritwika Kancharla, 2026</span>
   <span><a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a> &nbsp; <a href="https://github.com/ritwikareddykancharla">GitHub</a></span>
 </div></footer>
+<a class="totop" href="#top" aria-label="Back to top"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ring-bg" cx="24" cy="24" r="21"/><circle class="ring" cx="24" cy="24" r="21"/><path d="M24 31V18M18 23.5l6-6 6 6"/></svg></a>
+<script src="./assets/site.js?v=e47c58e8" defer></script>
 </body>
 </html>

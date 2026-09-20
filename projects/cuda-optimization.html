@@ -10,9 +10,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/site.css?v=14f48d06">
+  <link rel="stylesheet" href="../assets/site.css?v=e0904753">
 </head>
-<body>
+<body id="top">
 <header class="site"><div class="bar">
   <a class="brand" href="../index.html"><span class="mark">RK</span><span class="name">Ritwika Kancharla</span></a>
   <nav aria-label="Site">
@@ -24,16 +24,26 @@
   <a class="btn contact" href="mailto:ritwikareddykancharla@gmail.com">Email</a>
 </div></header>
 
-<main><article class="demo"><div class="wrap">
+<main><article class="demo" style="--accent:#c2410c"><div class="wrap">
   <a class="crumb" href="../index.html#projects">&larr; All projects</a>
   <header class="post-head">
-    <p class="eyebrow">Contract work, 2026</p>
-    <h1 class="post-title">A Verification-First Workflow for CUDA Kernel Optimization on Blackwell</h1>
-    <p class="meta"><span>Ritwika Kancharla</span><span>2026</span><span>Client work through Mercor</span></p>
+    <div class="head-text">
+      <p class="eyebrow">Contract work, 2026</p>
+      <h1 class="post-title">A Verification-First Workflow for CUDA Kernel Optimization on Blackwell</h1>
+      <p class="meta"><span>Ritwika Kancharla</span><span>2026</span><span>Client work through Mercor</span></p>
+    </div>
+    <figure class="hero-img"><img src="../assets/img/heroes/citrus.jpg" alt="Slices of orange, lemon, grapefruit and watermelon with ice cubes in rippling water." style="object-position:50% 50%"></figure>
     <div class="toc"><a class="chip" href="#problem">1. Problem statement</a><a class="chip" href="#method">2. Method</a><a class="chip" href="#correctness">3. Establishing correctness</a><a class="chip" href="#performance">4. Performance techniques</a><a class="chip" href="#artifacts">5. Recorded artifacts</a><a class="chip" href="#conclusions">6. Conclusions</a></div>
   </header>
-  <div class="post-body">
-    <div class="tldr"><p class="tk">Abstract</p><p>This page describes the method I use for contract work writing CUDA kernels for the NVIDIA RTX PRO 6000 Blackwell (<code>sm_120</code>). Each task is a fixed deep-learning workload with a PyTorch reference implementation. A kernel is accepted only if it compiles for the target architecture, passes a numerical check on every output and gradient tensor, produces no Compute Sanitizer errors, and is at least 1.2&times; faster than the reference on every workload variant.</p>
+  <div class="post-grid">
+    <aside class="side" aria-label="Contents"><div class="side-in">
+      <p class="side-k"><span>Contents</span><span class="side-pct" aria-hidden="true">0%</span></p>
+      <div class="side-bar" aria-hidden="true"><i></i></div>
+      <ol class="side-list"><i class="side-ind" aria-hidden="true"></i><li><a href="#problem"><span class="sn">01</span><span>Problem statement</span></a></li><li><a href="#method"><span class="sn">02</span><span>Method</span></a></li><li><a href="#correctness"><span class="sn">03</span><span>Establishing correctness</span></a></li><li><a href="#performance"><span class="sn">04</span><span>Performance techniques</span></a></li><li><a href="#artifacts"><span class="sn">05</span><span>Recorded artifacts</span></a></li><li><a href="#conclusions"><span class="sn">06</span><span>Conclusions</span></a></li></ol>
+      <a class="side-top" href="#top">Back to top</a>
+    </div></aside>
+    <div class="post-body">
+      <div class="tldr"><p class="tk">Abstract</p><p>This page describes the method I use for contract work writing CUDA kernels for the NVIDIA RTX PRO 6000 Blackwell (<code>sm_120</code>). Each task is a fixed deep-learning workload with a PyTorch reference implementation. A kernel is accepted only if it compiles for the target architecture, passes a numerical check on every output and gradient tensor, produces no Compute Sanitizer errors, and is at least 1.2&times; faster than the reference on every workload variant.</p>
 <p>The client's source code is confidential, so the page covers the workflow and not the kernels. Two task tracks have been completed under these criteria. The current task is the backward pass of a cross-attention layer with 16 workload variants.</p></div>
 
     <h2 id="problem"><span class="num">01</span>Problem statement</h2>
@@ -85,12 +95,15 @@
       <li>Spot checks give false confidence. Only the complete workload matrix is conclusive.</li>
     </ul>
 
+      <div class="next"><a class="btn" href="kaggriculture.html">Previous: Kaggriculture</a><a class="btn primary" href="routing-foundation-model.html">Next: Routing</a></div>
+    </div>
   </div>
-  <div class="next"><a class="btn" href="kaggriculture.html">Previous: Kaggriculture</a><a class="btn primary" href="routing-foundation-model.html">Next: Routing</a></div>
 </div></article></main>
 <footer class="site-foot"><div class="wrap">
   <span>Ritwika Kancharla, 2026</span>
   <span><a href="mailto:ritwikareddykancharla@gmail.com">ritwikareddykancharla@gmail.com</a> &nbsp; <a href="https://github.com/ritwikareddykancharla">GitHub</a></span>
 </div></footer>
+<a class="totop" href="#top" aria-label="Back to top"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ring-bg" cx="24" cy="24" r="21"/><circle class="ring" cx="24" cy="24" r="21"/><path d="M24 31V18M18 23.5l6-6 6 6"/></svg></a>
+<script src="../assets/site.js?v=e47c58e8" defer></script>
 </body>
 </html>
