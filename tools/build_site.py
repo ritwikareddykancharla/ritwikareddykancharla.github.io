@@ -8,13 +8,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 from page import EMAIL, GITHUB, project, shell
 from pages_arc import ARC2
 from pages_arc3 import ARC3
-from pages_other import CUDA, KAGG, ROUTING, TRAINIUM
+from pages_other import KAGG, ROUTING, TRAINIUM
 
 ROOT = Path(__file__).resolve().parent.parent
 
 PAGES = [("arc-agi-3", "ARC-AGI-3", ARC3), ("arc-agi-2", "ARC-AGI-2", ARC2),
          ("trainium-of-thought", "Trainium", TRAINIUM), ("kaggriculture", "Kaggriculture", KAGG),
-         ("cuda-optimization", "CUDA kernels", CUDA), ("routing-foundation-model", "Routing", ROUTING)]
+         ("routing-foundation-model", "Routing", ROUTING)]
 
 for i, (slug, _, spec) in enumerate(PAGES):
     prev = (PAGES[i - 1][1], f"{PAGES[i - 1][0]}.html") if i else None
@@ -37,13 +37,20 @@ HOME = f"""
 <main>
 <section class="hero" style="--accent:#b3245f"><div class="hero-in">
   <div>
-    <p class="kicker"><i></i>Portfolio</p>
-    <h1>Ritwika Kancharla&rsquo;s portfolio</h1>
-    <p class="lede">I am an <strong>ML/AI engineer</strong> focused on large language models, from training and optimization to GPU kernel design. My current research is on the <strong>ARC Prize 2026 benchmarks</strong> with an <strong>open 27B language model</strong>.</p>
+    <p class="kicker"><i></i>Ritwika Kancharla, ML/AI engineer</p>
+    <h1>LLMs, from the training loop down to the kernel.</h1>
+    <p class="lede">I work on making smaller open models reason by <strong>verifying everything they claim</strong>, on training language models under fixed compute, and on the GPU kernels underneath.</p>
     <div class="actions"><a class="btn primary" href="#projects">View projects</a><a class="btn" href="./about.html">About me</a><a class="btn" href="{GITHUB}">GitHub</a></div>
   </div>
   <figure class="hero-img"><img src="./assets/img/heroes/coffee-cat.jpg" width="736" height="414" alt="A painted Siamese cat holding a glass of iced coffee against a deep pink background with pressed flowers." style="object-position:50% 35%"></figure>
-</div></section>
+</div>
+<div class="wrap"><nav class="stats" aria-label="Projects">
+  <a href="./projects/arc-agi-3.html"><b>ARC-AGI-3</b><span>An open 27B model playing games it has never seen, with every rule verified</span></a>
+  <a href="./projects/arc-agi-2.html"><b>ARC-AGI-2</b><span>Grid puzzles solved by writing the rule as a program and checking it</span></a>
+  <a href="./projects/trainium-of-thought.html"><b>Trainium of Thought</b><span>Training the best language model possible in 30 minutes on one chip</span></a>
+  <a href="./projects/kaggriculture.html"><b>Kaggriculture</b><span>Imitation learning for a 719-decision farming economy</span></a>
+</nav></div>
+</section>
 
 <section class="sec" id="projects"><div class="wrap">
   <div class="sec-head"><h2>Projects</h2><p>Each project page states the problem, describes the approach, and reports results together with their evaluation setting and limitations.</p></div>
@@ -76,9 +83,6 @@ HOME = f"""
     {row("2026", "Ongoing", "./projects/kaggriculture.html", "Imitation Learning for a Long-Horizon Economic Game",
          "Recurrent behaviour cloning on a 719-decision farming economy. A strict evaluation audit showed that the first results were inflated by games in which the agent had failed, and it identified the cause.",
          "100,660 expert decisions", "140 complete games with seed-disjoint splits.", "tulips")}
-    {row("2026", "Ongoing", "./projects/cuda-optimization.html", "A Verification-First Workflow for CUDA Kernel Optimization on Blackwell",
-         "Contract work on the NVIDIA RTX PRO 6000. A kernel is accepted only if it is numerically correct, free of memory errors and at least 1.2&times; faster than PyTorch on every workload variant.",
-         "sm_120, 16 workload variants", "Two task tracks completed.", "citrus")}
     {row("2025 to 2026", "Proposal", "./projects/routing-foundation-model.html", "Routing Foundation Models: Learned Warm Starts for Vehicle-Routing Solvers",
          "A hybrid design in which a learned model supplies an exact solver with diverse starting solutions, using a MILP-structured encoder, diffusion-based generation, state-space decoding and feasibility repair.",
          "83-page monograph", "Three manuscripts and prototype code. Not yet benchmarked.", "lakeside")}
@@ -106,6 +110,7 @@ ABOUT = f"""
     <p class="lede">I am an <strong>ML/AI engineer</strong> focused on large language models. I am interested in every part of the stack, from training and optimization to GPU kernel design and the agents built on top of the models.</p>
     <p class="lede">My current research is on the <strong>ARC Prize 2026 benchmarks</strong>, where I pair an <strong>open 27B language model</strong> with software that verifies each of its hypotheses before acting on it.</p>
     <p class="lede">I hold an M.S. in Computer Science from Purdue University and a B.Tech in Computer Science from IIT Madras. Previously I was a Software Development Engineer in Amazon's Supply Chain Optimization Technologies group.</p>
+    <p class="lede">I currently work as a freelance ML engineer on contract. That work is covered by a non-disclosure agreement, so it is not described on this site.</p>
     <div class="actions"><a class="btn primary" href="mailto:{EMAIL}">Email me</a><a class="btn" href="./index.html#projects">Projects</a><a class="btn" href="{GITHUB}">GitHub</a></div>
   </div>
   <div class="about-side">
@@ -115,7 +120,7 @@ ABOUT = f"""
       <ul>
         <li><b>ARC-AGI-3</b><span>Interactive games solved with verified world models</span></li>
         <li><b>ARC-AGI-2</b><span>Program induction checked against the training pairs</span></li>
-        <li><b>CUDA kernels</b><span>Cross-attention backward pass on Blackwell</span></li>
+        <li><b>Contract ML engineering</b><span>Freelance client work, under NDA</span></li>
       </ul>
     </aside>
   </div>
@@ -124,6 +129,7 @@ ABOUT = f"""
 <section class="sec" id="background"><div class="wrap">
   <div class="sec-head"><h2>Background</h2><p>My interests developed from supply chain systems to learned optimization, and from there to reasoning agents and efficient model execution.</p></div>
   <div class="cv">
+    <article><span class="when">Current</span><h3>Freelance</h3><p class="role">ML engineer, contract</p><p>Client work under a non-disclosure agreement.</p></article>
     <article><span class="when">M.S.</span><h3>Purdue University</h3><p class="role">Computer Science</p><p>Coursework and projects in machine learning systems, distributed systems and high-performance computing.</p></article>
     <article><span class="when">Industry</span><h3>Amazon</h3><p class="role">Software Development Engineer, SCOT</p><p>Supply Chain Optimization Technologies, working close to routing and middle-mile logistics.</p></article>
     <article><span class="when">B.Tech</span><h3>IIT Madras</h3><p class="role">Computer Science</p><p>Foundations in algorithms, computer systems and mathematical optimization.</p></article>
@@ -142,7 +148,7 @@ ABOUT = f"""
 """
 
 index = shell(root="./", title="Ritwika Kancharla | Portfolio",
-              description="Ritwika Kancharla. Research and engineering in reasoning agents (ARC Prize 2026), language-model training under fixed compute, CUDA kernel optimization, and neural methods for vehicle routing.",
+              description="Ritwika Kancharla. Research and engineering in reasoning agents (ARC Prize 2026), language-model training under fixed compute, and neural methods for vehicle routing.",
               body=HOME)
 (ROOT / "index.html").write_text(index)
 print("wrote index", len(index))

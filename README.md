@@ -1,7 +1,7 @@
 # ritwikareddykancharla.github.io
 
 Portfolio site of [Ritwika Kancharla](https://ritwikareddykancharla.github.io/): project pages on
-ARC Prize 2026, a 30-minute LM training competition, a long-horizon game agent, CUDA kernels, and
+ARC Prize 2026, a 30-minute LM training competition, a long-horizon game agent, and
 earlier research on neural methods for vehicle routing.
 
 Static HTML, one stylesheet and one small script (`assets/site.js`: contents sidebar, eased scrolling, back-to-top, reveal on scroll; pages work without it). GitHub Pages publishes `main` from the repo root.

@@ -1,4 +1,4 @@
-"""Trainium, Kaggriculture, CUDA and routing project pages. Facts come from the project repos and run ledgers."""
+"""Trainium, Kaggriculture and routing project pages. Facts come from the project repos and run ledgers."""
 
 CHART = """<svg viewBox="0 0 860 300" role="img" aria-label="Validation bits per byte at five checkpoints, falling from 1.3951 to 0.9656">
 <g stroke="var(--chart-grid)" stroke-width="1"><line x1="60" y1="40" x2="820" y2="40"/><line x1="60" y1="110" x2="820" y2="110"/><line x1="60" y1="180" x2="820" y2="180"/><line x1="60" y1="250" x2="820" y2="250"/></g>
@@ -143,69 +143,6 @@ KAGG = dict(
       <li>The game is played to the end, and the final cash is compared with a paired game in which the script played throughout.</li>
     </ol>
     <p>The hand-over day moves earlier in stages: the last three days, late investment, operation of an established farm, the opening, and finally all 719 decisions. Each stage must outperform its paired control before the next stage begins.</p>
-""",
-)
-
-# =============================================================================== CUDA
-CUDA = dict(
-    hero=dict(img="citrus", accent="#c2410c", alt="Slices of orange, lemon, grapefruit and watermelon with ice cubes in rippling water."),
-    title="A Verification-First Workflow for CUDA Kernel Optimization on Blackwell | Ritwika Kancharla",
-    description="Contract CUDA work on the NVIDIA RTX PRO 6000 Blackwell: a kernel is accepted only if it is numerically correct, memory-safe and at least 1.2x faster than PyTorch on every workload.",
-    eyebrow="Contract work, 2026",
-    h1="A Verification-First Workflow for CUDA Kernel Optimization on Blackwell",
-    meta=["Ritwika Kancharla", "2026", "Client work through Mercor"],
-    links=[],
-    abstract="""<p>This page describes the method I use for contract work writing CUDA kernels for the NVIDIA RTX PRO 6000 Blackwell (<code>sm_120</code>). Each task is a fixed deep-learning workload with a PyTorch reference implementation. A kernel is accepted only if it compiles for the target architecture, passes a numerical check on every output and gradient tensor, produces no Compute Sanitizer errors, and is at least 1.2&times; faster than the reference on every workload variant.</p>
-<p>The client's source code is confidential, so the page covers the workflow and not the kernels. Two task tracks have been completed under these criteria. The current task is the backward pass of a cross-attention layer with 16 workload variants.</p>""",
-    body="""
-    <h2 id="problem">Problem statement</h2>
-    <p>The acceptance criterion applies to every workload variant and not to their average. An optimisation that is faster on fifteen input shapes and slower on the sixteenth cannot be delivered. A kernel that is fast because it computes an incorrect gradient is a failed experiment and is recorded as one. This requirement determines the order of work: correctness is established on all shapes before any performance work begins, and every performance change is evaluated on the complete set.</p>
-
-    <h2 id="method">Method</h2>
-    <ol>
-      <li>Measure the baseline on all shapes.</li>
-      <li>If any output is incorrect, identify the first incorrect intermediate tensor.</li>
-      <li>Profile the kernel and classify the bottleneck: compute, memory traffic, occupancy, launch overhead or synchronisation.</li>
-      <li>Make one change and record the expected effect before measuring.</li>
-      <li>Run the full workload set again. All 16 variants must pass.</li>
-    </ol>
-    <p>If a change causes a regression, the code is reverted and the note, the source snapshot and the measurements are kept. This record prevents the same idea from being attempted again without new evidence.</p>
-
-    <h2 id="correctness">Establishing correctness</h2>
-    <p>A backward pass can show many failing outputs that originate from one early error. The useful question is which intermediate tensor is the first to diverge. In the cross-attention task, the attention probabilities, context gradients, value gradients and output projections were all correct. The error began at the gradient of the attention scores and propagated from there into the query and key paths. This restricted the search to masking, scaling, memory layout, reductions and transposes around a single tensor.</p>
-    <p>Compute Sanitizer then separates arithmetic errors from out-of-bounds accesses and data races. Correctness is tested on all shapes, because a launch geometry that is valid for the common sequence length of 77 can be invalid for another.</p>
-
-    <h2 id="performance">Performance techniques</h2>
-    <p>Once the profile identifies where time is spent, the following techniques were the most effective on Blackwell.</p>
-    <ul>
-      <li>Fusing adjacent pointwise operations into the preceding or following kernel.</li>
-      <li>Tiling reductions so that reused values remain in registers or shared memory.</li>
-      <li>A specialised path for the common sequence length, with a correct general path as the fallback.</li>
-      <li>Fewer transfers to global memory for transposes and gradient accumulation.</li>
-      <li>Calling the vendor GEMM where a hand-written matrix multiplication cannot compete.</li>
-      <li>Batching small units of work so that launch cost is paid once.</li>
-    </ul>
-    <p>Speed is always measured end to end. A kernel that performs well in isolation can lose its advantage to a layout conversion or a temporary buffer after integration.</p>
-
-    <h2 id="artifacts">Recorded artifacts</h2>
-    <div class="tablewrap"><table>
-      <thead><tr><th>Artifact</th><th>Purpose</th></tr></thead>
-      <tbody>
-        <tr><td>Iteration note</td><td>The change, the profile observation, the sanitizer result, and whether the change failed</td></tr>
-        <tr><td>Source snapshot</td><td>The exact kernel behind each measurement, including rejected versions</td></tr>
-        <tr><td>Benchmark JSON</td><td>Correctness and timing for every workload in machine-readable form</td></tr>
-        <tr><td>Final report</td><td>Speedup per shape, numerical status and build details</td></tr>
-      </tbody>
-    </table></div>
-
-    <h2 id="conclusions">Conclusions</h2>
-    <ul>
-      <li>Locate the first incorrect intermediate before any performance work.</li>
-      <li>A profiler reading is a hypothesis about cause and should be tested by an experiment.</li>
-      <li>Optimise the common shape without breaking the uncommon ones.</li>
-      <li>Revert the code and keep the evidence.</li>
-      <li>Spot checks give false confidence. Only the complete workload matrix is conclusive.</li>
-    </ul>
 """,
 )
 
