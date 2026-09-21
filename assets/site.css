@@ -353,6 +353,14 @@ figcaption code { font-size: 1em; }
 .lp-d path { fill: none; stroke: var(--signal); stroke-width: 1.6; stroke-dasharray: 5 5; }
 .lp-ah { fill: var(--ink); } .lp-ahd { fill: var(--signal); }
 .lp-l { font: 400 10.5px var(--mono); fill: var(--signal); }
+.lp-t2 { font-size: 13.5px; font-weight: 700; letter-spacing: -.01em; }
+.lp-h1 { font: 800 17px var(--display); letter-spacing: -.03em; fill: var(--ink); }
+.lp-h2 { font: 400 11px var(--mono); fill: var(--soft); }
+.lp-x rect { fill: var(--accent); stroke: var(--accent); } .lp-x text { fill: #fff; } .lp-x .lp-s { opacity: .85; }
+.lp-g rect { fill: none; stroke: var(--rule); stroke-dasharray: 3 3; } .lp-g text { fill: var(--soft); opacity: .7; }
+.lp-m .lp-s, .lp-h .lp-s, .lp-x .lp-s { font-size: 11px; }
+.lp-rule { stroke: var(--rule); stroke-width: 1.5; stroke-dasharray: 4 5; fill: none; }
+.lp-br { fill: none; stroke: var(--soft); stroke-width: 1.2; } .lp-br2 { fill: none; stroke: var(--soft); stroke-width: 1.2; stroke-dasharray: 2 4; }
 
 /* evidence cards: one failure followed from the trace to the verified change */
 .ev { margin: 0 0 14px; background: var(--card); border: 1px solid var(--ink); transition: box-shadow .25s, transform .25s; }

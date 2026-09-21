@@ -174,6 +174,101 @@ GAMES = "".join([
 ])
 
 
+# ---------------------------------------------------------------------------------------------
+# Diagrams for the planned test-time communication section (same visual language as the loop figure)
+# ---------------------------------------------------------------------------------------------
+def _b(x, y, w, h, title, sub="", cls="lp-m", small=False):
+    ty = y + h / 2 + (5 if not sub else -3)
+    t = f'<text class="{"lp-t2" if small else "lp-t"}" x="{x + w / 2}" y="{ty}" text-anchor="middle">{title}</text>'
+    if sub:
+        t += f'<text class="lp-s" x="{x + w / 2}" y="{ty + 17}" text-anchor="middle">{sub}</text>'
+    return f'<g class="{cls}"><rect x="{x}" y="{y}" width="{w}" height="{h}"/>{t}</g>'
+
+
+def _dg(uid, w, h, label, body):
+    return (f'<svg class="loop" viewBox="0 0 {w} {h}" role="img" aria-label="{label}"><defs>'
+            f'<marker id="a{uid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="lp-ah"/></marker>'
+            f'<marker id="d{uid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="lp-ahd"/></marker>'
+            f'</defs>{body}</svg>')
+
+
+def _fig(n, svg, caption):
+    return f'<figure class="fig"><div class="plate">{svg}</div><figcaption><b>Figure {n}.</b> {caption}</figcaption></figure>'
+
+
+def _fig_best_vs_team():
+    ys = [64 + i * 58 for i in range(4)]
+    body = ('<text class="lp-h1" x="20" y="28">Best-of-4</text><text class="lp-h2" x="20" y="46">every agent must make every discovery</text>'
+            '<text class="lp-h1" x="470" y="28">Team-of-4</text><text class="lp-h2" x="470" y="46">a discovery is made once and adopted by the others</text>')
+    arrows, dashed = "", ""
+    for i, y in enumerate(ys):
+        body += _b(20, y, 84, 40, "game", "", "lp-h", True) + _b(142, y, 118, 40, f"agent {i}", "", "lp-m", True)
+        arrows += f'<path d="M106 {y + 20}H140" marker-start="url(#a6)" marker-end="url(#a6)"/><path d="M262 {y + 20}H306" marker-end="url(#a6)"/>'
+        body += _b(470, y, 84, 40, "game", "", "lp-h", True) + _b(592, y, 118, 40, f"agent {i}", "", "lp-m", True)
+        arrows += f'<path d="M556 {y + 20}H590" marker-start="url(#a6)" marker-end="url(#a6)"/>'
+        dashed += f'<path d="M712 {y + 20}H746" marker-start="url(#d6)" marker-end="url(#d6)"/>'
+    body += _b(308, 64, 100, 214, "keep the", "best result", "lp-h", True)
+    body += _b(748, 64, 96, 214, "shared log", "append-only", "lp-x", True)
+    body += '<path class="lp-rule" d="M440 14V300"/>'
+    body += '<text class="lp-l" x="592" y="298">findings, disconfirmations, scores</text>'
+    return _dg(6, 860, 310, "Best-of-4 runs four isolated agents and keeps the best result. Team-of-4 gives each agent its own game and connects all of them through one shared append-only log.",
+               body + f'<g class="lp-a">{arrows}</g><g class="lp-d">{dashed}</g>')
+
+
+def _fig_one_stream():
+    ys = [40 + i * 56 for i in range(4)]
+    body = _b(16, 96, 170, 96, "Frozen state", "observation + verified history", "lp-h", True)
+    arrows = ""
+    for i, y in enumerate(ys):
+        body += _b(246, y, 150, 40, f"agent {i}", "inspect, test, search", "lp-m", True)
+        arrows += f'<path d="M188 144C215 144 215 {y + 20} 244 {y + 20}" marker-end="url(#a7)"/><path d="M398 {y + 20}C428 {y + 20} 428 144 456 144" marker-end="url(#a7)"/>'
+    body += _b(458, 96, 176, 96, "Harness", "verify, accept one proposal", "lp-h", True)
+    body += _b(694, 96, 150, 96, "Game", "one real action or batch", "lp-h", True)
+    arrows += '<path d="M636 144H692" marker-end="url(#a7)"/>'
+    body += _b(246, 286, 388, 44, "shared log", "discoveries, proposals, verification outcomes", "lp-x", True)
+    dashed = '<path d="M769 194V308H636" marker-end="url(#d7)"/><path d="M244 308H100V194" marker-end="url(#d7)"/>'
+    body += '<text class="lp-l" x="650" y="330">transition is recorded</text><text class="lp-l" x="16" y="352">every context resumes from the common new state</text>'
+    return _dg(7, 860, 366, "One synchronised discovery round with a single action stream: four agents work from the same frozen state, the harness verifies and accepts one proposal, one action is executed, and the transition is broadcast through the shared log.",
+               body + f'<g class="lp-a">{arrows}</g><g class="lp-d">{dashed}</g>')
+
+
+def _fig_event_bus():
+    body = (_b(60, 36, 230, 84, "Master", "strategy, objective, decision criteria", "lp-m")
+            + _b(60, 230, 230, 84, "World modeler", "exact board, mechanics, backtests", "lp-m")
+            + _b(400, 36, 130, 278, "Event bus", "append-only", "lp-h")
+            + _b(596, 36, 240, 84, "Coordinator", "deduplicates, flags conflicts", "lp-m")
+            + _b(596, 230, 240, 84, "Compact handoff", "evidence, conflicts, assignments", "lp-x"))
+    arrows = ('<path d="M292 78H398" marker-end="url(#a8)"/><path d="M292 272H398" marker-end="url(#a8)"/>'
+              '<path d="M532 78H594" marker-end="url(#a8)"/><path d="M716 122V228" marker-end="url(#a8)"/>')
+    dashed = ('<path d="M716 316V350H24V78H58" marker-end="url(#d8)"/><path d="M24 272H58" marker-end="url(#d8)"/>')
+    body += ('<text class="lp-l" x="300" y="66">reasoning and</text><text class="lp-l" x="300" y="98">tool events</text>'
+             '<text class="lp-l" x="300" y="260">reasoning and</text><text class="lp-l" x="300" y="292">tool events</text>'
+             '<text class="lp-l" x="40" y="368">injected before each worker&#8217;s next inference call</text>'
+             '<text class="lp-l" x="728" y="180">compaction</text>')
+    return _dg(8, 860, 380, "Asynchronous event bus: the master and the world modeler append reasoning and tool events to an append-only bus, a coordinator compacts them into a handoff, and the handoff is injected before each worker's next inference call.",
+               body + f'<g class="lp-a">{arrows}</g><g class="lp-d">{dashed}</g>')
+
+
+def _fig_fifo():
+    body, n = "", 16
+    for i in range(n):
+        x = 20 + i * 36
+        cls = "lp-g" if i < 6 else "lp-m"
+        body += f'<g class="{cls}"><rect x="{x}" y="62" width="30" height="30"/><text class="lp-s" x="{x + 15}" y="82" text-anchor="middle">{i + 1}</text></g>'
+    body += _b(616, 54, 228, 46, "reserved", "32,768-token reply + tool schemas", "lp-h", True)
+    body += ('<text class="lp-h2" x="20" y="22">shared event log: append-only, nothing is ever deleted</text>'
+             '<path class="lp-br2" d="M236 50H844"/><text class="lp-h2" x="236" y="44" style="font-size:10.5px">one request</text>'
+             '<path class="lp-br" d="M20 108V116H230V108"/><text class="lp-l" x="20" y="134">dropped from the prompt first</text><text class="lp-l" x="20" y="149">(still in the log)</text>'
+             '<path class="lp-br" d="M236 108V116H590V108"/><text class="lp-l" x="236" y="134">newest suffix that passes the provider&#8217;s fits() check</text>')
+    return _dg(9, 860, 162, "The event log keeps every event. A prompt takes the newest events that fit after reserving the reply window and tool schemas; older events are dropped from the prompt but stay in the log.", body)
+
+
+FIG_TEAM = _fig(6, _fig_best_vs_team(), "Best-of-<em>N</em> against team-of-<em>N</em>, as studied by Park et al. [9]. In both, every agent has its own game session. The only difference is the shared append-only log.")
+FIG_STREAM = _fig(7, _fig_one_stream(), "The submission adaptation: one synchronised discovery round with a single action stream. Outlined boxes are language-model contexts and filled boxes are deterministic. Dashed arrows carry the result of the one real action back to every context.")
+FIG_BUS = _fig(8, _fig_event_bus(), "The revised live design. Two workers append completed reasoning and tool events to a lossless bus; a coordinator, which never acts, compacts them; the handoff is injected before each worker's next inference call. In the architecture probe the commit tool is not exposed, so no real action is executed.")
+FIG_FIFO = _fig(9, _fig_fifo(), "The FIFO inbox. Each request reserves the reply window and the tool schemas, then takes the newest events that fit. Older events leave the active context without leaving the log.")
+
+
 # ---- scoreboard of all 25 public games: this system against the Duck baseline run (tools/data/duck_kaggle_public25.json)
 import json as _json
 from pathlib import Path as _Path
@@ -483,6 +578,7 @@ ARC3 = dict(
     <h2 id="team">Planned direction: test-time communication</h2>
     <div class="note"><b>Status</b><p>This section describes a design that is planned and not yet enabled. None of the results on this page use it.</p></div>
     <p>Park, Kontonis, Garg, Krishnamurthy and Papailiopoulos <a href="#ref-9">[9]</a> compare two ways of spending the same number of agents on a task. In best-of-<em>N</em>, the agents work in isolation and the best result is kept, so every agent has to make every discovery by itself. In team-of-<em>N</em>, the agents share an append-only channel, so a discovery has to be made only once. On ARC-AGI-3 they report that a team of <em>k</em> communicating agents matches the success rate of about 4<em>k</em> independent agents, that the advantage grows with <em>k</em> (a team of five matches best-of-33), and that a team can reliably solve a game that no single agent solved. They also state the conditions: communication costs tokens and time, and independent agents can do better when compute is limited or when there is no clear measure of progress. It helps most when the task needs several successive discoveries, partial progress transfers between attempts, and a dense verifier exists.</p>
+    {FIG_TEAM}
 
     <h3>What the paper's protocol actually is</h3>
     <ul>
@@ -512,6 +608,7 @@ ARC3 = dict(
 -> exactly one proposed real action or batch is committed
 -> the transition and the verification outcome enter the shared log
 -> every private context continues from the common new state</code></pre>
+    {FIG_STREAM}
 
     <h3>What is shared, and who decides what is true</h3>
     <p>Agents receive evidence and not one another's reasoning: frames and component tables, transitions, harness-derived changes and object tracks, verified notes, rejected hypotheses, the current world model with its backtest report, and the remaining budgets. A contribution names a representation, hypotheses, a discriminating experiment with its prediction, a simulator patch or a candidate plan, and the evidence it used. The verifier, and no model, owns the truth: a contribution enters shared memory only after replay (for a transition rule), an exact structural check (for a claim about a frame), predicted against observed (for a probe), search replay (for a plan) and a contradiction check against all retained evidence. The channel is append-only and typed, because silently replacing a belief would destroy the evidence trail, and raw monologues stay in per-agent traces.</p>
@@ -527,6 +624,29 @@ ARC3 = dict(
   "artifact": "optional model or plan reference"
 }}</code></pre>
     <p>Diversity does not come from different prompts, which stay identical as in the paper. It comes from atomically claimed approach slots, private scratch space, distinct working hypotheses, and the instruction to keep one meaningful variation even after adopting a peer's better result. The design fails if all four agents repeat one interpretation and only critique its wording.</p>
+
+    <h3>Revised live design: an asynchronous three-context event bus</h3>
+    <p><strong>A negative result first.</strong> On 21 September a probe on the development server rejected the simplest version, two independent contexts whose answers are merged at the end. Both contexts spent roughly the same first 8,000 reasoning tokens reconstructing the same cross geometry on level 6 of a game and arriving at the same contradiction about coverage. Merging two duplicate answers is best-of-2. It is not the communication effect.</p>
+    <p>The next probe therefore uses three Qwen3.8-27B contexts on one board, and for this probe they do have distinct responsibilities, which departs from the homogeneous design above:</p>
+    <ul>
+      <li><strong>Master.</strong> Owns strategic continuity, hypotheses about the objective and the decision criteria, and will eventually be the only context allowed to take real actions. It must not spend its context transcribing geometry by hand.</li>
+      <li><strong>World modeler.</strong> Owns the exact representation of the board, the causal mechanics, executable helpers and models, backtests and discriminating experiments.</li>
+      <li><strong>Communication coordinator.</strong> Receives completed reasoning, tool calls, tool results and structured reports from both workers. It removes duplicates, keeps evidence references, flags conflicts and assigns distinct next questions. It never acts and should not try to solve the board itself.</li>
+    </ul>
+    {FIG_BUS}
+    <p>Communication is asynchronous at inference boundaries. A transformer request cannot absorb new context while it is generating, so the harness appends an event to the shared bus as soon as a context finishes a reasoning or tool turn, and every context receives all unseen events from the others before its next inference call. This is the same steering point at which a tool-using agent receives a message between two tool calls. Every event carries a sequence number, an author, a kind, a board state version, a timestamp and a payload. A report about an older board version remains useful as historical evidence and cannot authorise an action against a newer state.</p>
+    <p><strong>What is shared.</strong> Completed raw reasoning goes to the coordinator, because it shows which paths were already explored, which alternatives were discarded, which leaps were unsupported, and which insights never reached the final report. Tool calls and results are shared at once, so that a second worker does not repeat an exact measurement or a program that already failed. The coordinator turns these into a compact handoff: new discoveries grounded in evidence, contradictions with their provenance, open questions, separate assignments for the master and the world modeler, and the references needed to audit each claim. Workers may also see newly completed raw events before the next compaction, which allows fast steering between tool calls. The compact handoffs are the durable shared memory; raw monologues are diagnostic evidence and not permanent prompt state.</p>
+    <p><strong>Context policy.</strong> The event file is append-only and lossless, and each prompt uses a bounded first-in, first-out inbox:</p>
+    <ol>
+      <li>Before a request, collect all unseen events.</li>
+      <li>Reserve the 32,768-token completion window and the current tool schemas.</li>
+      <li>Ask the provider's own <code>fits()</code> check whether the request fits.</li>
+      <li>If it does not, remove the oldest raw event and retry until the newest suffix fits.</li>
+      <li>Record the included sequence range and the number of omitted events in the trace.</li>
+    </ol>
+    {FIG_FIFO}
+    <p>Old reasoning therefore leaves the active context without being deleted. Persistent notes and coordinator handoffs keep the useful conclusions, the full log remains available for audit or targeted retrieval, and at the next collaboration round each role starts from a clean role-specific checkpoint.</p>
+    <p><strong>Test criterion.</strong> The architecture is useful only if the trace shows causal transfer: (1) one worker discovers information that was absent from the other worker's previous turn; (2) the receiving worker explicitly changes or narrows its next investigation; (3) duplicated reasoning decreases after the event arrives; (4) the coordinator preserves the discovery without promoting speculation; and (5) the final master plan contains a verified improvement over either worker's initial report alone. The probe runs with reasoning enabled and the full 32,768-token reply ceiling, with no smaller cap on diagnostics or handoffs.</p>
 
     <h3>How it composes with the existing harness</h3>
     <p>Retrodict <a href="#ref-2">[2]</a> contributes explicit predictions, expectations, contradiction handling and a compact evidence log. Schema <a href="#ref-1">[1]</a> contributes executable models, replay backtests, repair and planning inside the inferred model. Test-time communication lets separate contexts discover and improve those artifacts while sharing only verified progress. It is not a teacher: every agent is the same base model, sees only the current game's evidence, and receives no released solutions or privileged action sequences.</p>
