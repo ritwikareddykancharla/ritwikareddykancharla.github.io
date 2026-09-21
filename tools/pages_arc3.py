@@ -185,9 +185,11 @@ _MINE = {  # game: (levels cleared, actions, note, actions per cleared level); g
     "ka59": (7, 300, "level 7 used a disclosed public-trace prior", [11, 38, 33, 39, 20, 46, 113]),
     "lp85": (8, 162, "across resumed sessions", [7, 41, 23, 17, 14, 20, 13, 27]),
     "tr87": (6, 189, "no resets, no mispredicted action", [32, 38, 41, 36, 18, 24]),
-    "su15": (5, 87, "level 6 in progress", [25, 15, 18, 19, 9]),
-    "ar25": (1, 42, "checkpointed on level 2", [21]), "cn04": (1, 33, "level 2 in progress", [21]),
-    "bp35": (0, 20, "checkpointed", []), "dc22": (0, 17, "checkpointed", []), "g50t": (0, None, "in progress", []),
+    "su15": (6, 212, "level 7 in progress", [25, 15, 18, 19, 9, 41], 45.12),
+    "re86": (5, 568, "level 6 in progress", [27, 42, 64, 141, 156], 40.21),
+    "lf52": (2, 289, "level 3 in progress", [38, 108], 3.33),
+    "ar25": (1, 42, "checkpointed on level 2", [21], 2.78), "cn04": (1, 133, "level 2 in progress", [21], 4.76),
+    "bp35": (0, 30, "checkpointed", []), "dc22": (0, 100, "checkpointed", []), "g50t": (0, 149, "in progress", []),
     "ls20": (0, None, "pilot run", []), "cd82": (0, None, "pilot run", []),
 }
 
@@ -220,7 +222,7 @@ def _board():
                 + _strip("Duck", "duck", d["per_level"], total, d["levels"]) + "</div>")
         if mine:
             acts = f'{mine[1]} actions' if mine[1] else "actions not recorded"
-            score = "score 100" if state == "done" else "score not final"
+            score = "score 100" if state == "done" else f"score {mine[4]:g} so far" if len(mine) > 4 else "score not final"
             me = f'<td class="b-num"><b>{mine[0]} / {total}</b><span>{acts}</span><span>{score}</span></td>'
         else:
             me = f'<td class="b-num"><b class="dim">0 / {total}</b></td>'
@@ -238,7 +240,7 @@ def _board():
             '<th scope="col" class="b-num">This system <em>Qwen3.8-27B, H200</em></th>'
             '<th scope="col" class="b-num">Duck baseline <em>Flash-Next, Kaggle GPU</em></th></tr></thead>'
             f'<tbody>{rows}</tbody><tfoot><tr><th scope="row" colspan="2">Levels cleared</th><td></td>'
-            f'<td class="b-num"><b>{mine_levels} / {total_levels}</b><span>14 games attempted</span><span>6 games at score 100</span></td>'
+            f'<td class="b-num"><b>{mine_levels} / {total_levels}</b><span>{len(_MINE)} games attempted</span><span>6 games at score 100</span></td>'
             f'<td class="b-num"><b>{duck_levels} / {total_levels}</b><span>25 games played</span><span>mean score 5.74</span></td></tr></tfoot></table></div>')
 
 
@@ -283,7 +285,7 @@ ARC3 = dict(
     links=[("Competition", "https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3"),
            ("Hardening sweep (PR #6)", "https://github.com/ritwikareddykancharla/arc-agi3/pull/6")],
     abstract="""<p>ARC-AGI-3 evaluates an agent on small interactive games for which no rules, goals or instructions are provided. This project studies whether an open-weight 27B language model (Qwen3.8-27B), used without any fine-tuning, can solve such games when it is paired with a deterministic software harness. The model proposes hypotheses about the game. The harness owns perception, an immutable record of every transition, replay verification of each proposed rule, bounded search, and guarded execution of plans.</p>
-<p>The system has completed six of the 25 released public games with the maximum local score of 100: <code>ft09</code> (6 of 6 levels, 75 actions), <code>sb26</code> (8 of 8, 124 actions), <code>r11l</code> (6 of 6, 138 actions), <code>ka59</code> (7 of 7, 300 actions), <code>lp85</code> (8 of 8, 162 actions) and <code>tr87</code> (6 of 6, 189 actions). The final level of <code>ka59</code> used an action prior derived from a public reference trace, which is disclosed below. Eight further games have been attempted and are partially solved or unsolved. All results are on public games that were studied during development. They validate the harness design and are not an estimate of leaderboard performance.</p>""",
+<p>The system has completed six of the 25 released public games with the maximum local score of 100: <code>ft09</code> (6 of 6 levels, 75 actions), <code>sb26</code> (8 of 8, 124 actions), <code>r11l</code> (6 of 6, 138 actions), <code>ka59</code> (7 of 7, 300 actions), <code>lp85</code> (8 of 8, 162 actions) and <code>tr87</code> (6 of 6, 189 actions). The final level of <code>ka59</code> used an action prior derived from a public reference trace, which is disclosed below. Ten further games have been attempted and are partially solved or unsolved. All results are on public games that were studied during development. They validate the harness design and are not an estimate of leaderboard performance.</p>""",
     body=f"""
     <figure class="fig"><div class="plate"><div class="frames">
       <div><div class="frame"><img src="{I3}ft09-play.gif" width="256" height="270" alt="Animation of the game ft09 played from the first level to the last. Tiles in a grid change colour one click at a time until each level completes."></div><span class="cap">ft09: 6 of 6 levels, 75 actions</span></div>
@@ -454,7 +456,7 @@ ARC3 = dict(
     <p>Six of the 25 public games are complete with the maximum local score of 100. Each entry below opens to a replay of the actual run, recorded action by action, together with an account of where the model alone got stuck, what the harness supplies for that game family, and why that is sufficient. A replay loads only when its entry is opened.</p>
     {GAMES}
     <h3>All 25 public games</h3>
-    <p>Six games are complete, eight are in progress (the furthest, <code>su15</code>, has cleared 5 of 9 levels) and eleven have not been attempted. For every level the table gives the human reference actions next to the actions this system used. The last line of each game is a reference point: the levels, actions and score of the Duck agent <a href="#ref-8">[8]</a>, the open-source winner of the first milestone, in my Kaggle notebook run of 14 September 2026. That run cleared 32 of 183 levels across the 25 games, cleared at least one level in 19 games, completed no game, and had a mean score of 5.74. On the six games completed here it cleared 9 of 41 levels.</p>
+    <p>Six games are complete, ten are in progress (the furthest are <code>su15</code> with 6 of 9 levels and <code>re86</code> with 5 of 8) and nine have not been attempted. Scores for games in progress are the local scorecard values so far and will change. For every level the table gives the human reference actions next to the actions this system used. The last line of each game is a reference point: the levels, actions and score of the Duck agent <a href="#ref-8">[8]</a>, the open-source winner of the first milestone, in my Kaggle notebook run of 14 September 2026. That run cleared 32 of 183 levels across the 25 games, cleared at least one level in 19 games, completed no game, and had a mean score of 5.74. On the six games completed here it cleared 9 of 41 levels.</p>
     <div class="note"><b>Not a like-for-like comparison</b><p>The Duck run used a smaller model (Qwen3.8-Flash-Next, NVFP4) on the Kaggle GPU and played all 25 games in 2 hours 12 minutes. The runs reported on this page use Qwen3.8-27B on an H200 with no time limit, across several sessions per game. Each cell is one level: the first line gives the actions a first-time human needed, the second the actions this system used on the levels it cleared, and the third the same for Duck. The comparison shows where a published direct-interaction agent stands on the same games; it does not isolate the effect of the harness.</p></div>
     {BOARD}
     <div class="note"><b>Interpretation</b><p>A score of 100 is the local scorecard value for one public game. Public development results are not Kaggle leaderboard results, and a completed public game is evidence about the harness and not about hidden games.</p></div>
@@ -475,11 +477,76 @@ ARC3 = dict(
       <li>Several harness components were written after studying a failure on a specific game, and two of them (the token simulator and the pickup representation) were informed by public Schema traces. No game identifier or solution is encoded, but the risk that the harness is fitted to the public mechanics is real and can only be measured on games that were not studied.</li>
       <li>The <code>sb26</code>, <code>ka59</code> and <code>lp85</code> results were obtained across resumed sessions, and level 7 of <code>ka59</code> used a public-trace prior.</li>
       <li>The model is served on an H200. The competition requires an offline submission, and the model and harness have not yet been packaged for it.</li>
-      <li>Eleven of the 25 public games have not been attempted.</li>
+      <li>Nine of the 25 public games have not been attempted.</li>
     </ul>
+
+    <h2 id="team">Planned direction: test-time communication</h2>
+    <div class="note"><b>Status</b><p>This section describes a design that is planned and not yet enabled. None of the results on this page use it.</p></div>
+    <p>Park, Kontonis, Garg, Krishnamurthy and Papailiopoulos <a href="#ref-9">[9]</a> compare two ways of spending the same number of agents on a task. In best-of-<em>N</em>, the agents work in isolation and the best result is kept, so every agent has to make every discovery by itself. In team-of-<em>N</em>, the agents share an append-only channel, so a discovery has to be made only once. On ARC-AGI-3 they report that a team of <em>k</em> communicating agents matches the success rate of about 4<em>k</em> independent agents, that the advantage grows with <em>k</em> (a team of five matches best-of-33), and that a team can reliably solve a game that no single agent solved. They also state the conditions: communication costs tokens and time, and independent agents can do better when compute is limited or when there is no clear measure of progress. It helps most when the task needs several successive discoveries, partial progress transfers between attempts, and a dense verifier exists.</p>
+
+    <h3>What the paper's protocol actually is</h3>
+    <ul>
+      <li><strong>Homogeneous agents.</strong> Every agent has the same model, tools, task instruction and communication prompt. There are no assigned roles such as player, critic or planner.</li>
+      <li><strong>Private work, shared findings.</strong> Each agent keeps a private context and scratch directory. All agents share append-only records of findings, disconfirmations, scores and coordination.</li>
+      <li><strong>Approach slots.</strong> Agents claim distinct approach slots at the start to avoid early herding, publish concise reproducible evidence, and adopt a peer's approach only after a measured improvement or a genuine block.</li>
+      <li><strong>Separate game sessions.</strong> On ARC-AGI-3 each agent has its own authenticated game session and its own per-level action budget. An action or a level clear by one agent does not advance a peer's game. Only discoveries are shared.</li>
+      <li><strong>Synchronisation barrier.</strong> Every half-level action budget, an agent that is ahead of the slowest live teammate cannot spend another game action until its peers catch up or leave the live set. It can still read files, run code and exchange notes.</li>
+      <li><strong>Pooled metric.</strong> A level counts as solved if any member clears it, and a game counts as solved if any member clears all its levels. The RHAE analysis reports the best and the average individual member separately and does not merge the agents' actions into one trajectory.</li>
+    </ul>
+    <p>The paper therefore supports several communicating sessions directly. It does not validate several agents writing to one board, and its pooled accounting cannot be assumed to match how a competition submission is scored.</p>
+    <div class="note"><b>Artifact audit, 21 September 2026</b><p>The repository linked from the paper (<a href="https://github.com/jerryjonghopark/test-time-communication">jerryjonghopark/test-time-communication</a>) was empty on this date: no commits, files or ARC trajectories, and I found no separate trace archive. The paper itself gives the communication prompt, aggregate per-game results, budget ablations and the synchronisation rules, so the protocol can be reproduced from the appendix. How a particular breakthrough travelled from one agent to another, message by message, cannot yet be inspected.</p></div>
+
+    <h3>Why it fits this harness</h3>
+    <p>The paper's conditions describe this setting. A game is a chain of discoveries (what the objects are, what each action does, what the goal is), a discovery made on one level carries to the next, and replay against the transition record is a dense and exact verifier. The mechanism I intend to borrow is narrow: independent search followed by rapid adoption of <strong>verified</strong> discoveries. Agreement or commentary between agents that is not verified adds cost and no capability.</p>
+    <p>When the 27B model finds the right representation it completes whole games. Its recurring failures are failures of the search process: it stays committed to one interpretation for too long, it recounts geometry by hand that code could compute, it knows the local mechanics and lacks the global objective, it describes a simulator without writing or testing one, and it loses or reinterprets a fact it had already established. Four independent contexts can search different representations without disturbing one another's working state, and the verifier lets one good partial discovery cross between contexts without importing unsupported conclusions.</p>
+    <p>All agents call the same Qwen3.8-27B server, so no additional copy of the weights is loaded. The cost is four KV caches, more generated tokens, contention for decoding throughput and, in the paper-faithful variant, four times the environment actions. The development server holds well over four full 131,072-token sequences; four is its scheduler cap. Whether four contexts fit the throughput and the nine-hour limit of the Kaggle GPU has to be measured there.</p>
+
+    <h3>Two variants</h3>
+    <p><strong>Paper-faithful: four identical agents, four game sessions.</strong> Each agent has its own context, scratch space, game instance and action budget, and all publish to the shared logs. One agent may discover that an action translates an arm while another discovers that a different action rotates it; the others reproduce or build on those facts in their own sessions. This is the closest reproduction and the strongest source of independent experimental evidence. It multiplies environment usage by four, and it is a development technique until it is known whether the hidden evaluation permits several scored sessions and how it would aggregate them.</p>
+    <p><strong>Submission adaptation: four identical agents, one action stream.</strong> All four receive the same prompt, tools, current observation, verified history and shared log, and all may inspect frames, write code, patch candidate models, backtest, search and propose experiments. Only one real action or batch is committed at a time. There is no permanent player: the harness owns the action endpoint, any agent may submit a proposal with its prediction and evidence, and the harness accepts one, executes it, records the transition and broadcasts the result. This serialises a contested resource; it does not assign a cognitive role. It keeps one scored action stream and avoids stale-state races. It departs from the paper in that the other three agents cannot gather distinct real observations in parallel. They can still mine the shared history, test competing representations and, once an executable world model exists, search private simulated branches without spending real actions.</p>
+    <p>For the single action stream, play proceeds in synchronised discovery rounds:</p>
+    <pre><code>freeze the current observation and the verified history
+-> four agents independently inspect, test and search
+-> agents append concise discoveries and action proposals
+-> the harness verifies what can be checked
+-> exactly one proposed real action or batch is committed
+-> the transition and the verification outcome enter the shared log
+-> every private context continues from the common new state</code></pre>
+
+    <h3>What is shared, and who decides what is true</h3>
+    <p>Agents receive evidence and not one another's reasoning: frames and component tables, transitions, harness-derived changes and object tracks, verified notes, rejected hypotheses, the current world model with its backtest report, and the remaining budgets. A contribution names a representation, hypotheses, a discriminating experiment with its prediction, a simulator patch or a candidate plan, and the evidence it used. The verifier, and no model, owns the truth: a contribution enters shared memory only after replay (for a transition rule), an exact structural check (for a claim about a frame), predicted against observed (for a probe), search replay (for a plan) and a contradiction check against all retained evidence. The channel is append-only and typed, because silently replacing a belief would destroy the evidence trail, and raw monologues stay in per-agent traces.</p>
+    <pre><code>{{
+  "kind": "discovery | disconfirmation | model_patch | plan | request",
+  "level": 6,
+  "state_id": "...",
+  "author": "agent-0 | agent-1 | agent-2 | agent-3",
+  "claim": "...",
+  "evidence": ["transition ids"],
+  "prediction": "...",
+  "verification": "pending | passed | failed",
+  "artifact": "optional model or plan reference"
+}}</code></pre>
+    <p>Diversity does not come from different prompts, which stay identical as in the paper. It comes from atomically claimed approach slots, private scratch space, distinct working hypotheses, and the instruction to keep one meaningful variation even after adopting a peer's better result. The design fails if all four agents repeat one interpretation and only critique its wording.</p>
+
+    <h3>How it composes with the existing harness</h3>
+    <p>Retrodict <a href="#ref-2">[2]</a> contributes explicit predictions, expectations, contradiction handling and a compact evidence log. Schema <a href="#ref-1">[1]</a> contributes executable models, replay backtests, repair and planning inside the inferred model. Test-time communication lets separate contexts discover and improve those artifacts while sharing only verified progress. It is not a teacher: every agent is the same base model, sees only the current game's evidence, and receives no released solutions or privileged action sequences.</p>
+
+    <h3>Experiment required before adoption</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Arm</th><th class="r">Agents</th><th>Communication</th><th>Environment</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td class="r">1</td><td>None (the current system)</td><td>One session</td></tr>
+        <tr><td>B</td><td class="r">4</td><td>None (best-of-4)</td><td>Four separate sessions</td></tr>
+        <tr><td>C</td><td class="r">4</td><td>Shared logs, paper-faithful</td><td>Four separate sessions</td></tr>
+        <tr class="best"><td>D</td><td class="r">4</td><td>Shared logs, serialised actions</td><td>One session and one action stream</td></tr>
+      </tbody>
+    </table></div>
+    <p>Arm C measures whether the paper's effect reproduces with a 27B model. Arm D measures whether the effect survives the single action stream that a submission is likely to need. The measures are levels and games completed, actions and RHAE, wall time and tokens, actions to the first correct representation, the number of proposed discoveries that pass verification, the rate of repeated hypotheses and contradictions, improvement in the model backtest, peak KV-cache memory and decoding throughput, and whether a communicated discovery is actually adopted and reused. Adoption requires an improvement in completion or action efficiency across several mechanic families within the Kaggle runtime limits, and not a higher success rate on one public game.</p>
+    <p>Open questions: whether all four agents should run continuously or only while a mechanic is unresolved; how the single-stream harness should choose among simultaneous proposals without becoming a learned central orchestrator; how long a synchronised round may last before an action must be taken; which discoveries transfer across levels and which are local to one; and when the harness should abandon communication and take the best verified action available.</p>
 
     <h2 id="future">Future work</h2>
     <ul>
+      <li>Run the four-arm test-time communication experiment described above (one agent, best-of-4, team-of-4 with separate sessions, team-of-4 with one action stream) on games with known stalls.</li>
       <li>Complete the sweep over all 25 public games, recording the earliest causal failure on each.</li>
       <li>Freeze the harness and repeat the completed games from empty memory several times to measure reliability, with <code>ft09</code> and <code>sb26</code> as regression sentinels.</li>
       <li>Report time, tokens, real actions and the number of harness interventions as separate quantities.</li>
@@ -498,6 +565,7 @@ ARC3 = dict(
       <li id="ref-6"><em>RGB-Agent</em> (alexisfox7). Source code. <a href="https://github.com/alexisfox7/RGB-Agent">github.com/alexisfox7/RGB-Agent</a>. The append-only log and the action queue in Retrodict follow this agent.</li>
       <li id="ref-7">ARC Prize Foundation. <em>ARC-AGI-3 methodology and the RHAE metric</em>. <a href="https://docs.arcprize.org/methodology">docs.arcprize.org/methodology</a>.</li>
       <li id="ref-8">Tufa Labs. <em>The Duck</em>, first place in ARC-AGI-3 Milestone Prize #1, open-sourced as a Kaggle notebook. Announcement: <a href="https://arcprize.org/blog/arc-prize-2026-milestone-1">arcprize.org/blog/arc-prize-2026-milestone-1</a>.</li>
+      <li id="ref-9">J. Park, V. Kontonis, S. Garg, A. Krishnamurthy and D. Papailiopoulos. <em>Scaling Discovery through Test-Time Communication</em>. 2026. <a href="https://arxiv.org/abs/2609.21032">arXiv:2609.21032</a>.</li>
     </ol>
 """,
 )
