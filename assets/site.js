@@ -121,6 +121,14 @@
   update();
   if (side) requestAnimationFrame(() => side.classList.add("ready"));
 
+  /* ---------- scoreboard: game descriptions open from the game name (all visible without this script) ---------- */
+  document.querySelectorAll(".b-tog").forEach((btn) => {
+    const row = document.getElementById(btn.getAttribute("aria-controls"));
+    if (!row) return;
+    row.hidden = true; btn.setAttribute("aria-expanded", "false");
+    btn.addEventListener("click", () => { row.hidden = !row.hidden; btn.setAttribute("aria-expanded", String(!row.hidden)); });
+  });
+
   /* ---------- reveal on scroll (checked in the scroll handler, so nothing can stay hidden) ---------- */
   const sel = ".post-body h2, .tldr, .fig, .ev, .takeaway, .board-wrap, .tablewrap, .note, blockquote, pre, .hero-img, .feature, .row, .pubs li, .cv article, .reach, .sec-head, .next, .stats a";
   let waiting = calm ? [] : [...document.querySelectorAll(sel)];

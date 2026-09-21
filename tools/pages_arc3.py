@@ -289,6 +289,37 @@ _MINE = {  # game: (levels cleared, actions, note, actions per cleared level); g
 }
 
 
+# Unofficial names (community backronyms; g50t, su15, re86 and tr87 changed after checking the public Schema
+# notes [1]) and a one-paragraph description of each game, from those notes and the hardening ledger.
+_GAMES = {
+    "ar25": ("axis-reflections-25", "Pieces sit on either side of a mirror axis. Pieces and the axis can both be moved, and the reflected copies have to cover the targets."),
+    "bp35": ("buoyancy-puzzle-35", "A balloon character moves left or right and then rises by itself until something stops it. Clicking pops blocking tiles from a distance, coming to rest under spikes ends the attempt, and the world scrolls as the balloon climbs towards its cradle."),
+    "cd82": ("color-drop-82", "A colour is chosen in a legend, a pouring piece is rotated, and colour is poured into a tank from above. The layers in the tank have to form the required pattern."),
+    "cn04": ("connector-network-04", "Pieces on a three-cell lattice carry connectors. Pieces are selected, rotated and moved so that their connectors bond, within a move budget that differs by level."),
+    "dc22": ("drawbridge-controls-22", "A walker has to reach a goal tile. Buttons and ports drive machines that open the route: a rotating arm that serves as a bridge, a cage on a track, conveyors and portals."),
+    "ft09": ("flip-tiles-09", "Clicking a tile advances its colour. Small patterned tiles state which of their eight neighbours must match a colour and which must not. Later levels add buttons that flip several neighbours at once."),
+    "g50t": ("ghost-50-teamwork", "A ring moves through corridors. One action sends it back to the start and switches state, and a ghost then replays the path recorded in the other state. The ghost holds a spring-loaded barrier open while the ring passes to the goal."),
+    "ka59": ("knockback-alignment-59", "Tokens stand on a lattice. Walking the selected token into another one launches that token by the number printed on it, through walls if necessary. Every token has to end in its frame."),
+    "lf52": ("leap-frog-52", "Peg solitaire: a peg jumps over a neighbour into an empty cell and removes it. Carts on rails carry pegs between boards. A level ends when one peg is left and no jump remains."),
+    "lp85": ("loop-placement-85", "Buttons rotate tiles around loops: rows, rings, diagonal cycles and, on the last level, entry registers feeding a shared conveyor. Coloured tiles have to reach their brackets within a click budget."),
+    "ls20": ("lock-smith-20", "A block walks a map one block-width at a time. Stepping on rotators and changers alters the key pattern shown in the display, and the block enters the lock when the key matches it."),
+    "m0r0": ("mirror-0-reunion-0", "Two avatars move as mirror images of each other. Both have to be steered past deadly tiles, keys and gates so that they meet on the axis."),
+    "r11l": ("rigging-11-links", "Clicking selects a node or moves the selected one. Each group of linked nodes has a marker at the average of its nodes, and every marker has to dock on the ring with the same colour signature. Later levels require collecting coloured pickups with the marker first."),
+    "re86": ("reshape-elements-86", "Shapes are selected, moved in three-cell steps, recoloured at palettes and, from level 6, deformed by pushing them against obstacles, until each silhouette covers the boxes of its colour."),
+    "s5i5": ("stretch-5-insert-5", "Control boxes lengthen or shorten bars by three cells, and bars push one another. Every bar's pointer has to dock in its diamond."),
+    "sb26": ("sequence-builder-26", "The top row shows a code. Tokens are placed into slots inside boxes, and some slots are references to other boxes. The sequence read from the boxes, following the references, has to equal the code before it is submitted."),
+    "sc25": ("spell-casting-25", "A head walks a field. Cards on the left act as spells: the pattern is the verb (resize, teleport, dissolve) and the colour selects what it applies to. The spells clear the way to the dock."),
+    "sk48": ("sliding-kebab-48", "An engine on a vertical track extends a rope that skewers and pushes blocks, and fixed vertical chains thread blocks so that they can only slide along them."),
+    "sp80": ("spill-planning-80", "Rectangular pieces are moved to deflect water falling from dispensers. A pour succeeds only if every cup fills and no water touches the floor."),
+    "su15": ("size-up-15", "A click moves a piece. Pieces that meet merge into the next size tier, and the required tier has to be delivered to a disk. Wandering glyphs chase pieces and eat them, and on some levels a glyph itself has to be parked on a disk."),
+    "tn36": ("toggle-navigation-36", "A row of icons is a program. Each instruction can be switched on or off and its direction changed. Running the program has to move the key onto the lock, and a failed run costs time."),
+    "tr87": ("translate-runes-87", "A dictionary pairs rotated glyphs, sometimes in chains. The answer word, and on later levels the dictionary itself, is edited with a cursor and a symbol wheel until translating the clue gives the answer."),
+    "tu93": ("traverse-unharmed-93", "A maze has to be walked from start to goal. From the later levels, sentries chase the player along the shortest path and kill on contact."),
+    "vc33": ("volume-control-33", "Tanks are separated by rods. Valves move water between tanks, floats ride the surface, and a door opens when the levels on both sides are flush with it. Every float has to reach the gate of its colour."),
+    "wa30": ("warehouse-agents-30", "Boxes are grabbed, carried and released onto goal areas. Autonomous carrier agents move boxes as well, one step per player action, and some walls let a carried box through and stop the player."),
+}
+
+
 def _strip(label, cls, values, total, cleared=None):
     """One line of the per-level grid. `cleared` is how many leading levels count as cleared (None: all shown plainly)."""
     cells = ""
@@ -323,9 +354,12 @@ def _board():
             me = f'<td class="b-num"><b class="dim">0 / {total}</b></td>'
         human_total = sum(d["human"])
         note = f'<span class="b-note">{mine[2]}</span>' if mine else ""
-        rows += (f'<tr class="b-{state}"><th scope="row"><code>{g}</code><span class="st st-{state}">{label}</span>{note}</th>'
+        name, desc = _GAMES[g]
+        rows += (f'<tr class="b-{state}"><th scope="row"><code>{g}</code><span class="st st-{state}">{label}</span>'
+                 f'<button class="b-tog" type="button" aria-expanded="true" aria-controls="about-{g}">{name}</button>{note}</th>'
                  f'<td class="b-bar">{grid}</td><td class="b-num"><b>{human_total}</b><span>actions</span></td>{me}'
-                 f'<td class="b-num"><b>{d["levels"]} / {total}</b><span>{d["actions"]} actions</span><span>score {d["score"]:g}</span></td></tr>')
+                 f'<td class="b-num"><b>{d["levels"]} / {total}</b><span>{d["actions"]} actions</span><span>score {d["score"]:g}</span></td></tr>'
+                 f'<tr class="b-desc b-{state}" id="about-{g}"><td colspan="5"><p><b>{name}.</b> {desc}</p></td></tr>')
     mine_levels = sum(v[0] for v in _MINE.values())
     duck_levels = sum(v["levels"] for v in _DUCK.values())
     total_levels = sum(v["of"] for v in _DUCK.values())
@@ -551,7 +585,7 @@ ARC3 = dict(
     <p>Six of the 25 public games are complete with the maximum local score of 100. Each entry below opens to a replay of the actual run, recorded action by action, together with an account of where the model alone got stuck, what the harness supplies for that game family, and why that is sufficient. A replay loads only when its entry is opened.</p>
     {GAMES}
     <h3>All 25 public games</h3>
-    <p>Six games are complete, ten are in progress (the furthest are <code>su15</code> with 6 of 9 levels and <code>re86</code> with 5 of 8) and nine have not been attempted. Scores for games in progress are the local scorecard values so far and will change. For every level the table gives the human reference actions next to the actions this system used. The last line of each game is a reference point: the levels, actions and score of the Duck agent <a href="#ref-8">[8]</a>, the open-source winner of the first milestone, in my Kaggle notebook run of 14 September 2026. That run cleared 32 of 183 levels across the 25 games, cleared at least one level in 19 games, completed no game, and had a mean score of 5.74. On the six games completed here it cleared 9 of 41 levels.</p>
+    <p>Six games are complete, ten are in progress (the furthest are <code>su15</code> with 6 of 9 levels and <code>re86</code> with 5 of 8) and nine have not been attempted. Scores for games in progress are the local scorecard values so far and will change. The four-character identifiers are the official ones. The longer names are unofficial backronyms from a community list; I changed four of them (<code>g50t</code>, <code>su15</code>, <code>re86</code>, <code>tr87</code>) after checking the mechanics in the public Schema notes <a href="#ref-1">[1]</a>. Select a name to read what the game asks for. For every level the table gives the human reference actions next to the actions this system used. The last line of each game is a reference point: the levels, actions and score of the Duck agent <a href="#ref-8">[8]</a>, the open-source winner of the first milestone, in my Kaggle notebook run of 14 September 2026. That run cleared 32 of 183 levels across the 25 games, cleared at least one level in 19 games, completed no game, and had a mean score of 5.74. On the six games completed here it cleared 9 of 41 levels.</p>
     <div class="note"><b>Not a like-for-like comparison</b><p>The Duck run used a smaller model (Qwen3.8-Flash-Next, NVFP4) on the Kaggle GPU and played all 25 games in 2 hours 12 minutes. The runs reported on this page use Qwen3.8-27B on an H200 with no time limit, across several sessions per game. Each cell is one level: the first line gives the actions a first-time human needed, the second the actions this system used on the levels it cleared, and the third the same for Duck. The comparison shows where a published direct-interaction agent stands on the same games; it does not isolate the effect of the harness.</p></div>
     {BOARD}
     <div class="note"><b>Interpretation</b><p>A score of 100 is the local scorecard value for one public game. Public development results are not Kaggle leaderboard results, and a completed public game is evidence about the harness and not about hidden games.</p></div>
